@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import Head from "next/head";
 
 export default function Layout({ children, pageProps }) {
   const { pathname } = useRouter();
@@ -11,30 +12,50 @@ export default function Layout({ children, pageProps }) {
   const router = useRouter();
 
   // Exclude layout for specific routes
-  const noLayoutRoutes = ["/auth/login", "/auth/signup", '/'];
+  const noLayoutRoutes = ["/auth/login", "/auth/signup", "/"];
   const shouldExcludeLayout = noLayoutRoutes.includes(pathname) || pageProps?.noLayout;
 
-  // Redirect to login if the user is not authenticated
+  // Redirect based on user role
   useEffect(() => {
-    if (status === "unauthenticated" && !shouldExcludeLayout) {
-      console.log(session, 'session')
-      // router.push("/auth/login");
+    if (status === "authenticated") {
+      const role = session?.user?.role;
+
+      if (role === "ADMIN" && !pathname.startsWith("/admin")) {
+        router.push("/admin");
+      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard")) {
+        router.push("/dashboard");
+      }
+    } else if (status === "unauthenticated" && !shouldExcludeLayout) {
+      router.push("/auth/login");
     }
-  }, [status, shouldExcludeLayout, router]);
+  }, [status, session, pathname, router, shouldExcludeLayout]);
 
   if (shouldExcludeLayout) {
-    return <>{children}</>; // Render only the children without Sidebar/Header
+    return <>{children}</>;
   }
 
-  const renderSidebar = (pathname) => {
-    if (pathname.startsWith("/admin")) {
-      return <Sidebar type="admin" />;
+  const renderSidebar = () => {
+    if (session?.user?.role === "ADMIN") {
+      return (
+        <>
+          <Head>
+            <title>Admin Dashboard</title>
+          </Head>
+          <Sidebar type="admin" />
+        </>
+      );
     }
-    return <Sidebar type="default" />;
+    return (
+      <>
+        <Head>
+          <title>Dashboard</title>
+        </Head>
+        <Sidebar type="default" />
+      </>
+    );
   };
 
   if (status === "loading") {
-    // Optionally, show a loading spinner while session status is loading
     return (
       <div className="flex items-center justify-center h-screen">
         <p>Loading...</p>
@@ -45,7 +66,7 @@ export default function Layout({ children, pageProps }) {
   return (
     <div className="flex bg-gray-100 h-screen">
       {/* Sidebar */}
-      {renderSidebar(pathname)}
+      {renderSidebar()}
       {/* Main Content */}
       <div className="ml-[200px] w-full p-4 overflow-y-auto">
         <Header joinUs={true} pathname={pathname} />

@@ -92,6 +92,36 @@ model UserCourse {
   @@map("user_courses")
 }
 
+model UserExam {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  examId     String   @db.ObjectId
+  score      Int      @default(0)
+  passed     Boolean  @default(false)
+  attemptedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam       Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, examId])
+  @@index([userId])
+  @@index([examId])
+  @@map("user_exams")
+}
+
+model Certificate {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  courseId  String   @db.ObjectId
+  issuedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("certificates")
+}
+
 model User {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   email          String       @unique
@@ -110,6 +140,8 @@ model User {
   userQuizzes    UserQuiz[]
   userCourses    UserCourse[]
   notes          Note[]
+  userExams      UserExam[]
+  certificates   Certificate[]
 
   @@index([role])
   @@map("users")
@@ -130,6 +162,7 @@ model Course {
   enrollments   Enrollment[]
   userCourses   UserCourse[]
   exam          Exam?
+  certificates  Certificate[]
 
   @@index([published])
   @@index([price])
@@ -211,6 +244,7 @@ model Exam {
   passingScore Int       @default(70)
   course       Course    @relation(fields: [courseId], references: [id])
   questions    Question[]
+  userExams    UserExam[]
 
   @@map("exams")
 }

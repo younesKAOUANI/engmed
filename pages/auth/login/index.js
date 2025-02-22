@@ -13,19 +13,18 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    const result = await signIn("credentials", {
+
+    const result = await signIn('credentials', {
+      redirect: false,
       email,
       password,
-      redirect: false,  
-    });
-  
+    })
+
     if (result?.error) {
-      setError(result.error);
-    } else {
-      router.push("/");
+      setError('Invalid email or password')
     }
-  };
+
+  }
 
   return (
     <div>
@@ -58,7 +57,7 @@ export default function Login() {
             className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-transparent bg-primary text-white px-4 py-2 rounded-md hover:scale-95"
           >Login </Button>
         </form>
-        <p className="mt-4">Don't have an account? 
+        <p className="mt-4">Don't have an account?
           <CustomLink href={"/auth/signup"} className="font-semibold text-primary"> Register here</CustomLink>
         </p>
       </main>

@@ -4,8 +4,8 @@ import React from 'react'
 
 export default function LandingHeader() {
   return (
-    <header className='shadow-md'>
-      <div className="bg-white text-black container mx-auto p-4 flex justify-between items-center">
+    <header className='fixed w-full bg-white shadow-md'>
+      <div className="text-black container mx-auto p-4 flex justify-between items-center">
         <div className='flex items-center gap-1'>
           <Image src='/logo.png' width={32} height={32} alt='EngMed Logo' />
           <h1 className="text-2xl font-bold">EngMed</h1>

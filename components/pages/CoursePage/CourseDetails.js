@@ -1,8 +1,14 @@
+"use client";
+
 import Button from '@/components/ui/Button'
 import { Star } from 'lucide-react'
 import React from 'react'
+import { useSession } from "next-auth/react";
+import { useState } from "react";
+import axios from "axios";
 
-export default function CourseDetails({ courseData, enroll = true }) {
+
+export default function CourseDetails({ courseData, enroll = false }) {
   return (
     <section className="bg-white p-6 shadow-md rounded-md w-full flex flex-col">
       <h1 className="text-3xl font-bold mb-4">{courseData.title}</h1>
@@ -25,8 +31,50 @@ export default function CourseDetails({ courseData, enroll = true }) {
         </div>
       </div>
 
-<Button className="bg-primary text-white px-4 py-2 rounded-md hover:scale-95 col-span-3 ml-auto text-xl font-bold">Enroll Now</Button>
-    </section>
 
+      {enroll && <EnrollButton courseData={courseData} />}
+    </section>
   )
+}
+
+ function EnrollButton(courseData) {
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleEnroll = async () => {
+    if (!session?.user?.id) {
+      setError("You must be logged in to enroll.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post("/api/enrollement", {
+        userId: session.user.id, // Pass the logged-in user's ID
+        courseId : courseData.courseData.id
+      });
+
+      console.log("Enrollment successful:", response.data);
+    } catch (err) {
+      setError("Failed to enroll. Please try again.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <Button
+        onClick={handleEnroll}
+        disabled={loading}
+        className="bg-primary text-white px-4 py-2 rounded-md hover:scale-95 col-span-3 ml-auto text-lg font-medium"
+      >
+        {loading ? "Enrolling..." : "Enroll Now"}
+      </Button>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+    </div>
+  );
 }

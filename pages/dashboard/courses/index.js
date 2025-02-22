@@ -44,13 +44,12 @@ export default function index() {
                             <p>{course.price} DA</p>
                         </div>
                         <div className='flex justify-center gap-4 w-full'>
-                            <CustomLink href={`/dashboard/view/courses/${course.id}`} className='bg-primary text-white px-4 py-2 rounded-md hover:scale-95'>
+                            <CustomLink href={`/dashboard/courses/view/${course.id}`} className='bg-primary text-white px-4 py-2 rounded-md hover:scale-95'>
                                 View More
                             </CustomLink>
                         </div>
                     </div>
                 ))}
-
             </div>
         </main>
     )

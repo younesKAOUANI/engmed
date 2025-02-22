@@ -11,9 +11,10 @@ export default function Header({ joinUs, pathname }) {
         '/admin/profile': 'Profile',
         // User paths
         '/': 'Dashboard',
-        '/courses': 'Courses',
-        '/settings': 'Settings',
-        '/profile': 'Profile'
+        '/dashboard/courses': 'Courses',
+        '/dashboard/enrollements': 'Your Enrollements',
+        '/dashboard/settings': 'Settings',
+        '/dashboard/profile': 'Profile'
     }[pathname] || 'Dashboard')
     const title = getPageTitle(pathname)
 

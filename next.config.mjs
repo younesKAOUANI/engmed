@@ -8,6 +8,11 @@ const nextConfig = {
         hostname: 'images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com',
         pathname: '/f/**', // Allow all paths under `/f/`
       },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        pathname: '/**', // Allow all paths under `/media/`
+      }
     ],
   },
 };
