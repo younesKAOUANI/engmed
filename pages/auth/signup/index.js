@@ -75,6 +75,8 @@ export default function Signup() {
         <p className="mt-4">Already have an account?
           <CustomLink href={"/auth/login"} className="font-semibold text-primary"> Login here</CustomLink>
         </p>
+        <CustomLink href={"/"} className="font-semibold text-blue-500 mt-6"> <span className="text-black">Or </span>Return to homepage</CustomLink>
+
       </main>
     </div>
   );

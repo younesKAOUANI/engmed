@@ -6,7 +6,6 @@ import Input from '@/components/ui/Input';
 import FormCard from '@/components/ui/FormCard';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
 import CustomLink from '@/components/ui/CustomLink';
 import AdminSequenceCard from '@/components/ui/Cards/AdminSequenceCard';
 
@@ -33,8 +32,9 @@ const CourseDetails = () => {
       try {
         const response = await axios.get(`/api/courses/${id}`);
         setFormData(response.data);
-          setExam(response.data.exam)
-        
+        if (response.data.exam) {
+          setExam(response.data.exam);
+        }
       } catch (err) {
         setError('Failed to fetch course data');
         console.error(err);
@@ -46,6 +46,7 @@ const CourseDetails = () => {
     fetchCourseData();
   }, [id]);
 
+  console.log(formData);
   // Form input change handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -261,7 +262,7 @@ const CourseDetails = () => {
                 onChange={(e) => handleExamChange('passingScore', parseInt(e.target.value, 10))}
               />
               <p className="text-md font-bold mt-4 col-span-3">Questions:</p>
-            {exam.questions.map((question, questionIndex) => (
+              {exam.questions.map((question, questionIndex) => (
                 <div key={questionIndex} className="border p-2 rounded mt-2">
                   <Input
                     placeholder={`Question #${questionIndex + 1}`}

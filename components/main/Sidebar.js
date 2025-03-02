@@ -31,6 +31,9 @@ const DefaultSidebar = () => (
       <MenuItem href={"/dashboard/certifications"}>
         <RiDashboardFill className="text-2xl" /> Certifications
       </MenuItem>
+      <MenuItem href={"/dashboard/lets-speak"}>
+        <RiDashboardFill className="text-2xl" /> Let's Speak
+      </MenuItem>
       <MenuItem href={"/dashboard/settings"}>
         <RiDashboardFill className="text-2xl" /> Settings
       </MenuItem>
@@ -51,6 +54,12 @@ const AdminSidebar = () => (
       </MenuItem>
       <MenuItem href={"/admin/courses"}>
         <RiDashboardFill className="text-2xl" /> Courses
+      </MenuItem>
+      <MenuItem href={"/admin/users"}>
+        <RiDashboardFill className="text-2xl" /> Users
+      </MenuItem>
+      <MenuItem href={"/admin/events"}>
+        <RiDashboardFill className="text-2xl" /> Events
       </MenuItem>
       <MenuItem href={"/admin/settings"}>
         <RiDashboardFill className="text-2xl" /> Settings

@@ -1,4 +1,3 @@
-'use client';
 import React, { useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
@@ -22,7 +21,7 @@ export default function Layout({ children, pageProps }) {
 
       if (role === "ADMIN" && !pathname.startsWith("/admin")) {
         router.push("/admin");
-      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard")) {
+      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard") && pathname !== "/") {
         router.push("/dashboard");
       }
     } else if (status === "unauthenticated" && !shouldExcludeLayout) {
