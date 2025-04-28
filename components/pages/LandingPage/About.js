@@ -1,37 +1,40 @@
 import Image from "next/image";
-import Link from "next/link";
 
 const About = () => {
   return (
-    <section className="bg-white">
-      <div className="gap-8 items-center py-8 px-4 mx-auto max-w-screen-xl xl:gap-16 md:grid md:grid-cols-2 sm:py-16 lg:px-6">
-        <Image
-          width={500}
-          height={500}
-          src="https://placehold.co/600x400.png?text=About+Us"
-          alt="dashboard"
-          className="object-cover rounded-lg shadow-lg"
-        />
-        <div className="mt-4 md:mt-0">
-          <h2 className="text-3xl font-bold text-left text-gray-800 mb-8">
-            Who Are We?
+    <section
+      id="who-we-are"
+      className="py-16 relative bg-gradient-to-b from-cyan-600 to-primary/80"
+      data-aos="fade-up"
+    >
+      <div className="container mx-auto flex items-center justify-center gap-12">
+        <div
+          className="px-4 text-left relative z-10 w-1/2"
+          data-aos="fade-right"
+          data-aos-delay="100"
+        >
+          <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
+            Built by Algerians, for Algerians
           </h2>
-          <p className="mb-6 font-regular text-gray-500 md:text-lg">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, olor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          <p className="text-gray-100 mb-8 text-lg">
+            We’re a team of TEFL/TESOL-certified tutors based in Algeria, working
+            to help doctors like you shine on the global stage. From our offices
+            in Oum El Bouaghi, we’ve designed EngMed to understand your needs and
+            support your goals.
           </p>
-          <Link
-            href="#"
-            className="inline-flex items-center text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:focus:ring-primary-900"
-          >
-            Get started
-            <svg className="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path
-                fillRule="evenodd"
-                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-          </Link>
+          <p className="text-gray-100 text-lg">
+            <strong>Why Us?</strong> We’ve helped doctors across Algeria improve
+            their English for better patient care and careers.
+          </p>
+        </div>
+        <div data-aos="fade-left" data-aos-delay="200">
+          <Image
+            src="/services.jpg"
+            alt="Our team"
+            width={400}
+            height={400}
+            className="rounded-lg shadow-lg"
+          />
         </div>
       </div>
     </section>
@@ -39,4 +42,3 @@ const About = () => {
 };
 
 export default About;
-

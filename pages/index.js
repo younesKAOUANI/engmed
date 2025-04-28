@@ -1,27 +1,31 @@
-import About from '@/components/pages/LandingPage/About'
-import ContactUs from '@/components/pages/LandingPage/ContactUs'
-import FeaturedCourses from '@/components/pages/LandingPage/FeaturedCourses'
-import Hero from '@/components/pages/LandingPage/Hero'
-import LandingFooter from '@/components/pages/LandingPage/LandingFooter'
-import LandingHeader from '@/components/pages/LandingPage/LandingHeader'
-import Testimonials from '@/components/pages/LandingPage/Testimonials'
-import Head from 'next/head'
-import React from 'react'
+import Head from "next/head";
+import LandingHeader from "@/components/pages/LandingPage/LandingHeader";
+import LandingFooter from "@/components/pages/LandingPage/LandingFooter";
+import Image from "next/image";
+import Hero from "@/components/pages/LandingPage/Hero";
+import WhyChooseUs from "@/components/pages/LandingPage/WhyChooseUs";
+import Services from "@/components/pages/LandingPage/Services";
+import About from "@/components/pages/LandingPage/About";
+import Testimonials from "@/components/pages/LandingPage/Testimonials";
+import ContactUs from "@/components/pages/LandingPage/ContactUs";
 
-export default function index() {
+export default function Home() {
   return (
-    <main className='bg-gray-100'>
+    <div className="min-h-screen bg-gray-50 font-sans">
       <Head>
-        <title>EngMed</title>
+        <title>EngMed - Improve Your Medical English</title>
+        <meta name="description" content="Master medical English with EngMed, designed for Algerian doctors" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
+
       <LandingHeader />
       <Hero />
+      <WhyChooseUs />
+      <Services />
       <About />
-      <FeaturedCourses />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <ContactUs />
       <LandingFooter />
-    </main>
-  )
+    </div>
+  );
 }
-

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 
 export default function Testimonials() {
@@ -24,37 +25,61 @@ export default function Testimonials() {
   ];
 
   return (
-    <section className="bg-white">
-      <div className="section">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-          What Our Clients Say
-        </h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((testimonial, index) => (
-            <div
-              key={index}
-              className="bg-white p-6 shadow-lg rounded-lg flex flex-col justify-between"
-            >
-              <p className="text-gray-600 mb-4">{testimonial.text}</p>
-              <div className="flex items-center">
-                <img
-                  src={testimonial.image}
-                  alt={`Client ${index + 1}`}
-                  className="w-12 h-12 rounded-full mr-4"
-                />
-                <div>
-                  <h3 className="font-semibold text-gray-800">
-                    {testimonial.name}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {testimonial.title}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+<section id="proof" className="py-16 relative bg-gray-100" data-aos="fade-up">
+  <div className="absolute inset-y-0 left-0 w-1/2 hidden md:block">
+    <Image
+      src="/hero-bg.jpg"
+      alt="Successful doctor"
+      layout="fill"
+      objectFit="cover"
+      className="opacity-20"
+    />
+  </div>
+  <div className="container mx-auto px-4 text-center relative z-10">
+    <h2 className="text-3xl font-bold text-gray-800 mb-6" data-aos="fade-up" data-aos-delay="100">
+      Doctors Like You, Succeeding
+    </h2>
+    <p className="text-gray-600 mb-8 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+      Hear from doctors who’ve used EngMed...
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div
+        className="p-6 bg-white rounded-lg shadow"
+        data-aos="fade-up"
+        data-aos-delay="300"
+      >
+        <p className="text-gray-600 italic">“EngMed helped me explain treatments...”</p>
+        <p className="mt-4 font-semibold">Dr. Karim, Algiers</p>
       </div>
-    </section>
+      <div
+        className="p-6 bg-white rounded-lg shadow"
+        data-aos="fade-up"
+        data-aos-delay="400"
+      >
+        <p className="text-gray-600 italic">“I presented my research in English...”</p>
+        <p className="mt-4 font-semibold">Dr. Fatima, Oran</p>
+      </div>
+      <div
+        className="p-6 bg-white rounded-lg shadow"
+        data-aos="fade-up"
+        data-aos-delay="500"
+      >
+        <p className="text-gray-600 italic">“It fits my schedule perfectly...”</p>
+        <p className="mt-4 font-semibold">Dr. Youssef, Constantine</p>
+      </div>
+    </div>
+    <p className="text-gray-600 mt-6 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="600">
+      Clear English builds trust with patients...
+    </p>
+    <a
+      href="/auth/login"
+      className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg..."
+      data-aos="fade-up"
+      data-aos-delay="700"
+    >
+      Join Them Today
+    </a>
+  </div>
+</section>
   );
 }

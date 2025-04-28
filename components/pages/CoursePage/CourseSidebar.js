@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { CheckCircle, BookOpen, GraduationCap } from "lucide-react"; // Add GraduationCap icon
+import { CheckCircle, BookOpen, GraduationCap } from "lucide-react";
 import QuizModal from "./QuizModal";
-import ExamModal from "./ExamModal"; // New component for final exam
+import ExamModal from "./ExamModal";
 
-export default function CourseSidebar({ sequences, activeSequence, setActiveSequence, onSequenceUpdate, userId, exam, onExamComplete }) {
+export default function CourseSidebar({
+  sequences,
+  activeSequence,
+  setActiveSequence,
+  onSequenceUpdate,
+  userId,
+  exam,
+  onExamComplete,
+}) {
   const [selectedSequence, setSelectedSequence] = useState(null);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isExamOpen, setIsExamOpen] = useState(false);
@@ -21,14 +29,14 @@ export default function CourseSidebar({ sequences, activeSequence, setActiveSequ
     if (onSequenceUpdate) {
       onSequenceUpdate(updatedSequences);
     }
-    setIsQuizOpen(false);
+    // Removed setIsQuizOpen(false) to let QuizModal control closing
   };
 
   const handleExamOpen = () => {
     setIsExamOpen(true);
   };
 
-  const allSequencesCompleted = sequences.every((seq) => seq.completed || !seq.quiz); // Check if all sequences with quizzes are completed
+  const allSequencesCompleted = sequences.every((seq) => seq.completed || !seq.quiz);
 
   return (
     <aside className="md:w-1/4 bg-white p-4 overflow-y-auto rounded-md shadow-md flex flex-col">
@@ -44,7 +52,7 @@ export default function CourseSidebar({ sequences, activeSequence, setActiveSequ
           >
             <div className="flex items-center w-full">
               <span className="flex-1">{sequence.title}</span>
-              {sequence.quiz && (
+              {sequence.quiz && !sequence.completed && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -78,7 +86,7 @@ export default function CourseSidebar({ sequences, activeSequence, setActiveSequ
       {selectedSequence && (
         <QuizModal
           isOpen={isQuizOpen}
-          onClose={() => setIsQuizOpen(false)}
+          onClose={() => setIsQuizOpen(false)} // Pass control to QuizModal
           sequence={selectedSequence}
           onComplete={handleQuizComplete}
           userId={userId}

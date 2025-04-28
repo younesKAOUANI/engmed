@@ -170,7 +170,9 @@ model User {
   email          String            @unique
   name           String            @db.String
   password       String
-  phoneNumber    String?           @db.String  // New field for phone number
+  phoneNumber    String?           @db.String 
+  profession     String?           @db.String
+  yearOfStudy    Int?              @db.Int
   isVerified     Boolean           @default(false)
   role           UserRole          @default(STUDENT)
   balance        Float             @default(0)

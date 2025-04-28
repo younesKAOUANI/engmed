@@ -1,33 +1,55 @@
-import Button from '@/components/ui/Button';
-import Image from 'next/image';
-import React from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { Link } from 'lucide-react';
+import Button from "@/components/ui/Button";
+import Image from "next/image";
+import React from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 export default function LandingHeader() {
-  const { data: session, status } = useSession(); // Get session data
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   return (
-    <header className="fixed w-full bg-white shadow-md">
+    <header
+      className="fixed z-50 w-full bg-white/40 backdrop-blur-md shadow-md"
+      data-aos="fade-down"
+    >
       <div className="text-black container mx-auto p-4 flex justify-between items-center">
-        <div className="flex items-center gap-1">
-          <Image src="/logo.png" width={32} height={32} alt="EngMed Logo" />
-          <h1 className="text-2xl font-bold">EngMed</h1>
+        <div
+          className="flex items-center gap-1"
+          data-aos="fade-right"
+          data-aos-delay="100"
+        >
+          <Image src="/logo.png" width={48} height={48} alt="EngMed Logo" />
+          <span className="text-xl font-bold">EngMed</span>
         </div>
-        <nav className="flex">
-          <a href="#" className="text-lg font-semibold mx-4 hover:text-primary">
-            Featured Courses
+        <nav
+          className="hidden md:flex space-x-6"
+          data-aos="fade-left"
+          data-aos-delay="200"
+        >
+          <a href="#" className="text-lg font-semibold hover:text-blue-300">
+            Home
           </a>
-          <a href="#" className="text-lg font-semibold mx-4 hover:text-primary">
-            About
+          <a
+            href="#challenges"
+            className="text-lg font-semibold hover:text-blue-300"
+          >
+            Your Needs
           </a>
-          <a href="#" className="text-lg font-semibold mx-4 hover:text-primary">
-            Testimonials
+          <a
+            href="#who-we-are"
+            className="text-lg font-semibold hover:text-blue-300"
+          >
+            About Us
           </a>
-          <a href="#" className="text-lg font-semibold mx-4 hover:text-primary">
-            Contact us
+          <a href="#tools" className="text-lg font-semibold hover:text-blue-300">
+            How It Works
+          </a>
+          <a href="#proof" className="text-lg font-semibold hover:text-blue-300">
+            Success Stories
+          </a>
+          <a href="#start" className="text-lg font-semibold hover:text-blue-300">
+            Get Started
           </a>
         </nav>
         <JoinUsButton session={session} status={status} router={router} />
@@ -37,21 +59,21 @@ export default function LandingHeader() {
 }
 
 function JoinUsButton({ session, status, router }) {
-  let href = "/auth/login"; // Default for not logged in
+  let href = "/auth/login";
   let buttonText = "Join Us";
 
   if (status === "authenticated") {
-    href = "/dashboard"; // Set to /dashboard for all logged-in users
-    buttonText = session.user.role === "STUDENT" ? "Dashboard" : "Admin Panel";
+    href = "/dashboard";
+    buttonText = session.user.role === "STUDENT" ? "Your Learning" : "Admin Panel";
   }
 
   return (
-      <Button
-        className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-transparent bg-primary text-white px-4 py-2 rounded-md hover:scale-95"
-        disabled={status === "loading"} // Disable button while session loads
-        href={href}
-      >
-        {status === "loading" ? "Loading..." : buttonText}
-      </Button>
+    <Button
+      className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-transparent bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95"
+      disabled={status === "loading"}
+      href={href}
+    >
+      {status === "loading" ? "Loading..." : buttonText}
+    </Button>
   );
-};
+}
