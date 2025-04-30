@@ -184,6 +184,7 @@ model User {
   sessions       Session[]
   enrollments    Enrollment[]
   userQuizzes    UserQuiz[]
+  userSpeechQuizzes UserSpeechQuiz[]
   userCourses    UserCourse[]
   notes          Note[]
   userExams      UserExam[]
@@ -218,21 +219,6 @@ model Course {
   @@map("courses")
 }
 
-model CourseSequence {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  title    String  @db.String
-  order    Int
-  courseId String  @db.ObjectId
-  course   Course  @relation(fields: [courseId], references: [id])
-  quiz     Quiz?
-  video    Video?
-  file     File?
-
-  @@index([courseId])
-  @@index([order])
-  @@map("course_sequences")
-}
-
 model Quiz {
   id         String         @id @default(auto()) @map("_id") @db.ObjectId
   title      String         @db.String
@@ -246,21 +232,6 @@ model Quiz {
   @@map("quizzes")
 }
 
-model Question {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
-  content       String       @db.String
-  answers       String[]
-  correctAnswer String
-  points        Int          @default(1)
-  quizId        String?      @db.ObjectId
-  examId        String?      @db.ObjectId
-  quiz          Quiz?        @relation(fields: [quizId], references: [id])
-  exam          Exam?        @relation(fields: [examId], references: [id])
-
-  @@index([quizId])
-  @@index([examId])
-  @@map("questions")
-}
 
 model Video {
   id         String         @id @default(auto()) @map("_id") @db.ObjectId
@@ -316,4 +287,72 @@ enum UserRole {
   ADMIN
   INSTRUCTOR
   STUDENT
+}
+
+
+model SpeechQuiz {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  title        String         @db.String
+  sequenceId   String         @unique @db.ObjectId
+  duration     Int?
+  attempts     Int            @default(1)
+  sequence     CourseSequence @relation(fields: [sequenceId], references: [id])
+  questions    Question[]
+  userSpeechQuizzes UserSpeechQuiz[]
+  @@map("speech_quizzes")
+}
+
+model Question {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  content       String       @db.String
+  answers       String[]     @default([]) // Optional for quiz/exam, empty for speechQuiz
+  correctAnswer String?      // Optional for quiz/exam, null for speechQuiz
+  points        Int?         // Optional for quiz/exam, null for speechQuiz
+  quizId        String?      @db.ObjectId
+  examId        String?      @db.ObjectId
+  speechQuizId  String?      @db.ObjectId
+  quiz          Quiz?        @relation(fields: [quizId], references: [id])
+  exam          Exam?        @relation(fields: [examId], references: [id])
+  speechQuiz    SpeechQuiz?  @relation(fields: [speechQuizId], references: [id])
+  @@index([quizId])
+  @@index([examId])
+  @@index([speechQuizId])
+  @@map("questions")
+  UserSpeechQuiz UserSpeechQuiz[]
+}
+
+model UserSpeechQuiz {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String     @db.ObjectId
+  speechQuizId String     @db.ObjectId
+  questionId   String     @db.ObjectId // Track specific question
+  audioUrl     String?    // Store audio file URL
+  score        Int?       // Null until admin scores
+  notes        String?    // Admin feedback
+  passed       Boolean?   // Null until admin scores
+  attemptedAt  DateTime   @default(now())
+  scoredAt     DateTime?  // When admin scores
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  speechQuiz   SpeechQuiz @relation(fields: [speechQuizId], references: [id], onDelete: Cascade)
+  question     Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  @@unique([userId, speechQuizId, questionId])
+  @@index([userId])
+  @@index([speechQuizId])
+  @@index([questionId])
+  @@map("user_speech_quizzes")
+}
+
+model CourseSequence {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  title      String       @db.String
+  order      Int
+  courseId   String       @db.ObjectId
+  course     Course       @relation(fields: [courseId], references: [id])
+  quiz       Quiz?
+  speechQuiz SpeechQuiz?
+  video      Video?
+  file       File?
+  @@index([courseId])
+  @@index([order])
+  @@map("course_sequences")
 }

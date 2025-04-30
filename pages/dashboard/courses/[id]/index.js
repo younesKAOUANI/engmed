@@ -19,6 +19,7 @@ export default function CourseViewer() {
   const [error, setError] = useState(null);
   const [certificateEarned, setCertificateEarned] = useState(false);
 
+  console.log(courseData, "courseData");
   useEffect(() => {
     const fetchCourseData = async () => {
       if (!id || !userId) return;
@@ -30,7 +31,9 @@ export default function CourseViewer() {
         const data = response.data;
         const enrichedSequences = data.sequences.map((sequence) => ({
           ...sequence,
-          completed: sequence.quiz?.userQuizzes?.[0]?.passed || false,
+          completed:
+            (sequence.quiz?.userQuizzes?.[0]?.passed || false) ||
+            (sequence.speechQuiz?.userSpeechQuizzes?.[0]?.passed || false),
         }));
         setCourseData({ ...data, sequences: enrichedSequences });
         setActiveSequence(enrichedSequences[0] || null);
@@ -109,7 +112,6 @@ export default function CourseViewer() {
       {certificateEarned && (
         <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded shadow-lg">
           <p>Congratulations! You’ve earned a certificate for {courseData.title}!</p>
-          {/* Add download link or PDF generation here */}
         </div>
       )}
     </main>

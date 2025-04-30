@@ -29,10 +29,17 @@ export default async function handler(req, res) {
                 quiz: {
                   include: {
                     userQuizzes: userId
-                      ? {
-                          where: { userId: userId },
-                        }
+                      ? { where: { userId: userId } }
                       : false, // Only include userQuizzes if userId is provided
+                    questions: true, // Include quiz questions
+                  },
+                },
+                speechQuiz: {
+                  include: {
+                    userSpeechQuizzes: userId
+                      ? { where: { userId: userId } }
+                      : false, // Only include userSpeechQuizzes if userId is provided
+                    questions: true, // Include speech quiz questions
                   },
                 },
                 video: true,
@@ -51,6 +58,7 @@ export default async function handler(req, res) {
           return res.status(404).json({ error: 'Course not found' });
         }
 
+        console.log("Course response - sequences:", course.sequences); // Debug
         res.status(200).json(course);
       },
 
@@ -114,8 +122,17 @@ export default async function handler(req, res) {
                   quiz: {
                     include: {
                       userQuizzes: userId ? { where: { userId } } : false,
+                      questions: true, // Include quiz questions
                     },
                   },
+                  speechQuiz: {
+                    include: {
+                      userSpeechQuizzes: userId ? { where: { userId } } : false,
+                      questions: true, // Include speech quiz questions
+                    },
+                  },
+                  video: true,
+                  file: true,
                 },
               },
               exam: {

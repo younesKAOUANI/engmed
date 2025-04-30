@@ -61,6 +61,9 @@ const AdminSidebar = () => (
       <MenuItem href={"/admin/events"}>
         <RiDashboardFill className="text-2xl" /> Events
       </MenuItem>
+      <MenuItem href={"/admin/speech-quizzes"}>
+        <RiDashboardFill className="text-2xl" /> Speech Quizzes
+      </MenuItem>
       <MenuItem href={"/admin/settings"}>
         <RiDashboardFill className="text-2xl" /> Settings
       </MenuItem>

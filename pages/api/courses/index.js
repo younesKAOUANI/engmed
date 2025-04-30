@@ -13,14 +13,22 @@ export default async function handler(req, res) {
     const handlers = {
       GET: async () => {
         const courses = await prisma.course.findMany({
-          include: { sequences: { include: { quiz: true } }, exam: true },
+          include: {
+            sequences: {
+              include: {
+                quiz: true,
+                speechQuiz: true, // Add speechQuiz to include
+              },
+            },
+            exam: true,
+          },
         });
         res.status(200).json(courses);
       },
 
       POST: async () => {
         const { title, description, price, thumbnail } = req.body;
-        
+
         if (!title || !description || !price || !thumbnail) {
           return res
             .status(400)
@@ -28,11 +36,11 @@ export default async function handler(req, res) {
         }
 
         const course = await prisma.course.create({
-          data: { 
-            title, 
-            description, 
-            price: parseInt(price), // Convert price to number
-            thumbnail 
+          data: {
+            title,
+            description,
+            price: parseInt(price),
+            thumbnail,
           },
         });
         res.status(201).json(course);
@@ -45,12 +53,12 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'ID is required for updating a course.' });
         }
 
-        const course = await prisma.course.update({ 
-          where: { id }, 
+        const course = await prisma.course.update({
+          where: { id },
           data: {
             ...data,
-            price: data.price ? parseInt(data.price) : undefined
-          }
+            price: data.price ? parseInt(data.price) : undefined,
+          },
         });
         res.status(200).json(course);
       },
@@ -62,7 +70,7 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'ID is required for deleting a course.' });
         }
 
-        await prisma.course.delete({ where: { id: parseInt(id) } });
+        await prisma.course.delete({ where: { id } }); // Removed parseInt as id is String in schema
         res.status(204).end();
       },
     };
@@ -74,7 +82,6 @@ export default async function handler(req, res) {
         .json({ error: `Method ${method} Not Allowed` });
     }
 
-    // Execute the handler directly without await
     return handlers[method]();
   } catch (error) {
     handleError(res, error);

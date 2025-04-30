@@ -11,7 +11,7 @@ export default function Layout({ children, pageProps }) {
   const router = useRouter();
 
   // Exclude layout for specific routes
-  const noLayoutRoutes = ["/auth/login", "/auth/signup", "/"];
+  const noLayoutRoutes = ["/auth/login", "/auth/signup", "/", "/placement-test"];
   const shouldExcludeLayout = noLayoutRoutes.includes(pathname) || pageProps?.noLayout;
 
   // Redirect based on user role

@@ -3,6 +3,7 @@ import Image from "next/image";
 import React from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function LandingHeader() {
   const { data: session, status } = useSession();
@@ -51,6 +52,9 @@ export default function LandingHeader() {
           <a href="#start" className="text-lg font-semibold hover:text-blue-300">
             Get Started
           </a>
+          <Link href="/placement-test" className="text-lg font-semibold hover:text-blue-300">
+          Free test
+          </Link>
         </nav>
         <JoinUsButton session={session} status={status} router={router} />
       </div>
