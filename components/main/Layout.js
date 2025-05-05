@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import Sidebar from "./Sidebar";
+import AdminSidebar from "./AdminSidebar"; // Updated import
 import Header from "./Header";
+import StudentHeader from "./StudentHeader"; // New import for StudentHeader
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
@@ -33,14 +34,15 @@ export default function Layout({ children, pageProps }) {
     return <>{children}</>;
   }
 
-  const renderSidebar = () => {
+  const renderSidebarAndHeader = () => {
     if (session?.user?.role === "ADMIN") {
       return (
         <>
           <Head>
             <title>Admin Dashboard</title>
           </Head>
-          <Sidebar type="admin" />
+          <AdminSidebar />
+          <Header joinUs={true} pathname={pathname} />
         </>
       );
     }
@@ -49,7 +51,7 @@ export default function Layout({ children, pageProps }) {
         <Head>
           <title>Dashboard</title>
         </Head>
-        <Sidebar type="default" />
+        <StudentHeader joinUs={true} pathname={pathname} /> {/* Use StudentHeader for students */}
       </>
     );
   };
@@ -64,12 +66,11 @@ export default function Layout({ children, pageProps }) {
 
   return (
     <div className="flex bg-gray-100 h-screen">
-      {/* Sidebar */}
-      {renderSidebar()}
+      {/* Sidebar and Header */}
+      {renderSidebarAndHeader()}
       {/* Main Content */}
-      <div className="ml-[200px] w-full p-4 overflow-y-auto">
-        <Header joinUs={true} pathname={pathname} />
-        {children}
+      <div className={`${session?.user?.role === "ADMIN" ? "ml-[200px]" : "pt-20 bg-gradient-to-b from-primary/90 to-primary/50"} w-full p-4 overflow-y-auto`}>
+      {children}
       </div>
     </div>
   );

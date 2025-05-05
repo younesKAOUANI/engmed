@@ -15,6 +15,7 @@ export default function Home() {
           frameBorder="0"
           allowFullScreen
         ></iframe>
-      </div>    </div>
+      </div>
+          </div>
   )
 }
