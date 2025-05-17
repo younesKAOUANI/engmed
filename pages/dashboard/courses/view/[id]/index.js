@@ -2,7 +2,6 @@ import { useRouter } from "next/router"
 import React, { useEffect, useState } from "react"
 import axios from "axios"
 import { Loader2, Star } from "lucide-react"
-import VideoPlayer from "@/components/pages/CoursePage/VideoPlayer";
 import CourseSidebar from "@/components/pages/CoursePage/CourseSidebar";
 import CourseDetails from "@/components/pages/CoursePage/CourseDetails";
 
@@ -52,7 +51,7 @@ export default function CourseViewer() {
     }
 
     return (
-        <main className="flex flex-col bg-gray-100 mt-4">
+        <main className="flex flex-col mt-4">
             <main className="flex-grow flex flex-col gap-4 md:flex-row">
                 <CourseDetails courseData={courseData} enroll={true} />
                 <CourseSidebar

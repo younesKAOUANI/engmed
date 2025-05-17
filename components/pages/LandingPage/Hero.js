@@ -20,8 +20,7 @@ export default function Hero() {
           data-aos="fade-up"
           data-aos-delay="200"
         >
-          As a doctor, you deserve to communicate clearly with patients and
-          colleagues worldwide. EngMed helps you get there—step by step.
+          Whether you're a student, teacher, or practitioner in medicine, dentistry, pharmacy, or paramedics, clear communication is essential. EngMed helps you build the English skills you need—step by step.
         </p>
         <a
           href="/auth/login"
@@ -36,7 +35,7 @@ export default function Hero() {
           data-aos="fade-up"
           data-aos-delay="400"
         >
-          Join doctors from all over Algeria already improving their English
+          Join others from all over Algeria already improving their English
         </p>
       </div>
       <Image

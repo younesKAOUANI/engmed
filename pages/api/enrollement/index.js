@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth"; // Corrected import path
+import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -14,7 +14,10 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const { courseId } = req.body;
-      console.log("courseId", courseId);
+
+      if (!courseId) {
+        return res.status(400).json({ error: "courseId is required" });
+      }
 
       const existingEnrollment = await prisma.enrollment.findUnique({
         where: {
@@ -47,7 +50,7 @@ export default async function handler(req, res) {
     try {
       const enrollments = await prisma.enrollment.findMany({
         where: { userId: session.user.id },
-        include: { course: true }, // Optional: Include course details
+        include: { course: true },
       });
 
       return res.status(200).json({ success: true, enrollments });

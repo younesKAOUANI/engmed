@@ -48,7 +48,7 @@ const WhyChooseUs = () => {
           data-aos-delay="200"
         >
           Every day, you’re saving lives—but English can feel like a hurdle.
-          Here’s what we hear from doctors like you:
+          Here’s what we hear from people like you:
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {challenges.map((item, index) => (
@@ -61,7 +61,7 @@ const WhyChooseUs = () => {
               <h3 className="text-2xl font-semibold mb-2">{item.title}</h3>
               <
 
-p className="text-gray-700 text-md">{item.description}</p>
+                p className="text-gray-700 text-md">{item.description}</p>
               <div className="absolute bottom-6 right-6 text-black opacity-70">
                 {item.icon}
               </div>

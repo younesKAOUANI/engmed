@@ -32,7 +32,7 @@ export default function CertificatesPage() {
 
   if (status === "unauthenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-500">Please log in to view your certificates.</p>
       </div>
     );
@@ -40,7 +40,7 @@ export default function CertificatesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -48,20 +48,20 @@ export default function CertificatesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-500">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen py-8">
+      <div className="max-w-8xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-center mb-8">Your Certificates</h1>
         {certificates.length === 0 ? (
           <p className="text-center text-gray-600">You haven’t earned any certificates yet.</p>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-3">
             {certificates.map((certificate) => (
               <div
                 key={certificate.id}

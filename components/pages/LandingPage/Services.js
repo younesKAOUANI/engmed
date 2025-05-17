@@ -51,7 +51,7 @@ export default function Services() {
                         data-aos="fade-up"
                         data-aos-delay="200"
                     >
-                        EngMed fits into your life as a doctor. Whether you’re in a clinic or
+                        EngMed fits into your life as a doctor or a student. Whether you’re in a clinic or
                         a hospital, our platform makes English practical and achievable.
                     </p>
                 </div>

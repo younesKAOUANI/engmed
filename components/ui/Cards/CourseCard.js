@@ -3,11 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 
-export default function CourseCard({ course }) {
+export default function CourseCard({ course, enrolled = false }) {
   const { id, title, description, thumbnail, price, rating, totalStudents } = course;
 
   return (
-    <Link href={`/dashboard/courses/view/${id}`} className="block w-full bg-white border border-gray-200 rounded-sm shadow-md hover:shadow-lg transition-shadow">
+    <Link href={enrolled ? `/dashboard/courses/${id}` : `/dashboard/courses/view/${id}`}
+      className="block w-full bg-white border border-gray-200 rounded-sm shadow-md hover:shadow-lg transition-shadow">
       {/* Thumbnail */}
       <div className="relative w-full h-[200px]">
         <Image

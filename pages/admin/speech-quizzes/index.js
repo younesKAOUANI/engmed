@@ -8,18 +8,19 @@ export default function SpeechQuizReview() {
   const [submissions, setSubmissions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({}); // Track score and notes per submission
+  const [formData, setFormData] = useState({});
 
   useEffect(() => {
     if (session?.user?.role !== "ADMIN") return;
     const fetchSubmissions = async () => {
       try {
         const response = await axios.get("/api/admin/speech-quizzes");
-        setSubmissions(response.data);
-        console.log("Fetched submissions:", response.data);
+        console.log("Response data:", response.data);
+        const data = Array.isArray(response.data) ? response.data : response.data.submissions || [];
+        setSubmissions(data);
       } catch (err) {
         setError("Failed to fetch submissions");
-        console.error(err);
+        console.error("Fetch error:", err.response?.status, err.response?.data || err.message);
       } finally {
         setIsLoading(false);
       }
@@ -40,7 +41,6 @@ export default function SpeechQuizReview() {
       alert("Please provide score and pass status");
       return;
     }
-
     try {
       const response = await axios.put("/api/admin/speech-quizzes", {
         id: submissionId,
@@ -87,13 +87,14 @@ export default function SpeechQuizReview() {
           {submissions.map((submission) => (
             <li key={submission.id} className="border p-4 rounded shadow">
               <p>
-                <strong>User:</strong> {submission.user.name} ({submission.user.email})
+                <strong>User:</strong> {submission.user?.name || "Unknown"} (
+                {submission.user?.email || "Unknown"})
               </p>
               <p>
-                <strong>Quiz:</strong> {submission.speechQuiz.title}
+                <strong>Quiz:</strong> {submission.speechQuiz?.title || "Unknown"}
               </p>
               <p>
-                <strong>Prompt:</strong> {submission.question.content}
+                <strong>Prompt:</strong> {submission.question?.content || "Unknown"}
               </p>
               <div className="my-2">
                 <audio controls src={submission.audioUrl} className="w-full" />

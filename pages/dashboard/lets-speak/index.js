@@ -64,13 +64,13 @@ export default function LetsSpeak() {
       ) : events.length === 0 ? (
         <p>No events available.</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="grid grid-cols-2 gap-4">
           {events.map((event) => {
             const hasJoined = userId && event.participants.some((p) => p.userId === userId);
             return (
               <li
                 key={event.id}
-                className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center"
+                className="bg-white p-4 rounded-lg shadow-md h-full flex justify-between items-center"
               >
                 <div>
                   <h2 className="text-xl font-semibold">{event.title}</h2>

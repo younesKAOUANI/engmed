@@ -22,7 +22,7 @@ export default function Layout({ children, pageProps }) {
 
       if (role === "ADMIN" && !pathname.startsWith("/admin")) {
         router.push("/admin");
-      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard") && pathname !== "/") {
+      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard") && pathname !== "/" && pathname !== "/placement-test") {
         router.push("/dashboard");
       }
     } else if (status === "unauthenticated" && !shouldExcludeLayout) {
@@ -69,7 +69,7 @@ export default function Layout({ children, pageProps }) {
       {/* Sidebar and Header */}
       {renderSidebarAndHeader()}
       {/* Main Content */}
-      <div className={`${session?.user?.role === "ADMIN" ? "ml-[200px]" : "pt-20 bg-gradient-to-b from-primary/90 to-primary/50"} w-full p-4 overflow-y-auto`}>
+      <div className={`${session?.user?.role === "ADMIN" ? "ml-12" : "pt-20 bg-gradient-to-b from-primary/90 to-primary/50"} w-full p-4 overflow-y-auto`}>
       {children}
       </div>
     </div>
