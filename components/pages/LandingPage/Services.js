@@ -5,22 +5,25 @@ import { useState } from "react";
 
 const services = [
     {
-        title: "Real Medical Practice",
+        title: "Interactive, specialized courses",
         description:
-            "Learn through scenarios like explaining a diagnosis or discussing treatments.",
+            "Engage with tailored lessons designed for medical professionals, featuring real-world scenarios and interactive activities.",
         image: "/practice.jpg",
     },
     {
-        title: "Speak Clearly",
-        description: "Get feedback to improve your pronunciation and confidence.",
+        title: "Flexible and gamified learning",
+        description:
+            "Enjoy a dynamic learning experience with game-like challenges and instant feedback, making progress fun and motivating using a technology based approach.",
         image: "/speak.jpg",
     },
     {
-        title: "Flexible Learning",
-        description: "Study anytime, anywhere—perfect for your busy schedule.",
+        title: "Real speaking practice",
+        description:
+            "Build your confidence by practicing real conversations and medical dialogues, anytime and anywhere, to fit your busy schedule.",
         image: "/flexible.jpg",
     },
 ];
+
 
 export default function Services() {
     const [activeTab, setActiveTab] = useState(0);

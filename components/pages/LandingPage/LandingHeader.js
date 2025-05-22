@@ -37,26 +37,24 @@ export default function LandingHeader() {
           >
             Your Needs
           </a>
+          <a href="#tools" className="text-lg font-semibold hover:text-blue-300">
+            How It Works
+          </a>
           <a
             href="#who-we-are"
             className="text-lg font-semibold hover:text-blue-300"
           >
-            About Us
+            About
           </a>
-          <a href="#tools" className="text-lg font-semibold hover:text-blue-300">
-            How It Works
-          </a>
-          <a href="#proof" className="text-lg font-semibold hover:text-blue-300">
-            Success Stories
-          </a>
-          <a href="#start" className="text-lg font-semibold hover:text-blue-300">
-            Get Started
-          </a>
-          <Link href="/placement-test" className="text-lg font-semibold hover:text-blue-300">
-          Free test
-          </Link>
+
         </nav>
+        <div className="flex items-center gap-4">
+          <Link href="/placement-test" 
+                className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95">
+          Free English Test
+          </Link>
         <JoinUsButton session={session} status={status} router={router} />
+        </div>
       </div>
     </header>
   );
@@ -73,7 +71,7 @@ function JoinUsButton({ session, status, router }) {
 
   return (
     <Button
-      className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-transparent bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95"
+      className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95"
       disabled={status === "loading"}
       href={href}
     >

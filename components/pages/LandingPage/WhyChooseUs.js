@@ -73,7 +73,7 @@ const WhyChooseUs = () => {
           data-aos="fade-up"
           data-aos-delay="700"
         >
-          Just 15 minutes a day with EngMed can improve your patient interactions
+          Just 15 minutes a day with EngMed can improve interactions
           in weeks.
         </p>
         <a

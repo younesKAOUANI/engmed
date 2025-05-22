@@ -64,8 +64,7 @@ export default function ContactUs() {
           data-aos="fade-up"
           data-aos-delay="200"
         >
-          Sign up in seconds and start learning with EngMed—designed for doctors
-          like you. Try it free and see the difference.
+          Sign up in seconds and start learning with EngMed. Try it free and see the difference.
         </p>
         <a
           href="/auth/login"

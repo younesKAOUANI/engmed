@@ -17,14 +17,9 @@ const About = () => {
             Built by Algerians, for Algerians
           </h2>
           <p className="text-gray-100 mb-8 text-lg">
-            We’re a team of TEFL/TESOL-certified tutors based in Algeria, working
-            to help doctors like you shine on the global stage. From our offices
-            in Oum El Bouaghi, we’ve designed EngMed to understand your needs and
+            Hana Boulahrouz a TEFL/TESOL-certified tutor and her team of experts based in Algeria, working
+            to help students, professionals, and teacher of medecine, dentistry, pharmacy and paramedics like you shine on the global stage. We’ve designed EngMed to understand your needs and
             support your goals.
-          </p>
-          <p className="text-gray-100 text-lg">
-            <strong>Why Us?</strong> We’ve helped doctors across Algeria improve
-            their English for better patient care and careers.
           </p>
         </div>
         <div data-aos="fade-left" data-aos-delay="200">
