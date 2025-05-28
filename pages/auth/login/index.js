@@ -13,18 +13,31 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const result = await signIn('credentials', {
       redirect: false,
       email,
       password,
-    })
-
+    });
     if (result?.error) {
-      setError('Invalid email or password')
+      setError('Invalid email or password');
     }
+  };
 
-  }
+  const quickLogin1 = async () => {
+    await signIn('credentials', {
+      redirect: true,
+      email: "admin@engmed.com",
+      password: "123456",
+    });
+  };
+
+  const quickLogin2 = async () => {
+    await signIn('credentials', {
+      redirect: true,
+      email: "student@engmed.com",
+      password: "123456789",
+    });
+  };
 
   return (
     <div>
@@ -55,12 +68,31 @@ export default function Login() {
           <Button
             type="submit"
             className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-transparent bg-primary text-white px-4 py-2 rounded-md hover:scale-95"
-          >Login </Button>
+          >
+            Login
+          </Button>
+          <Button
+            type="button"
+            onClick={quickLogin1}
+            className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-transparent bg-blue-500 text-white px-4 py-2 rounded-md hover:scale-95"
+          >
+            Quick Login (ADMIN)
+          </Button>
+          <Button
+            type="button"
+            onClick={quickLogin2}
+            className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-transparent bg-green-500 text-white px-4 py-2 rounded-md hover:scale-95"
+          >
+            Quick Login (STUDENT)
+          </Button>
         </form>
-        <p className="mt-4">Don't have an account?
+        <p className="mt-4">
+          Don't have an account?
           <CustomLink href={"/auth/signup"} className="font-semibold text-primary"> Register here</CustomLink>
         </p>
-          <CustomLink href={"/"} className="font-semibold text-blue-500 mt-6"> <span className="text-black">Or </span>Return to homepage</CustomLink>
+        <CustomLink href={"/"} className="font-semibold text-blue-500 mt-6">
+          <span className="text-black">Or </span>Return to homepage
+        </CustomLink>
       </main>
     </div>
   );

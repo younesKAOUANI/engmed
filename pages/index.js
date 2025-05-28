@@ -6,7 +6,6 @@ import Hero from "@/components/pages/LandingPage/Hero";
 import WhyChooseUs from "@/components/pages/LandingPage/WhyChooseUs";
 import Services from "@/components/pages/LandingPage/Services";
 import About from "@/components/pages/LandingPage/About";
-import Testimonials from "@/components/pages/LandingPage/Testimonials";
 import ContactUs from "@/components/pages/LandingPage/ContactUs";
 
 export default function Home() {
