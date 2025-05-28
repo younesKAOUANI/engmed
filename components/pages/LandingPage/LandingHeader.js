@@ -49,7 +49,11 @@ export default function LandingHeader() {
 
         </nav>
         <div className="flex items-center gap-4">
-          <Link href="/placement-test" 
+          <Link href="/game" 
+                className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95">
+          Mini Game
+          </Link>
+                    <Link href="/placement-test" 
                 className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95">
           Free English Test
           </Link>

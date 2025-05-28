@@ -134,9 +134,9 @@ export default function ContactUs() {
             data-aos-delay="600"
           >
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3192.0117258084643!2d3.058756!3d36.753769!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x128fa43d3bd4fb45%3A0x94df4b3a10f970d0!2sAlgiers%2C%20Algeria!5e0!3m2!1sen!2sdz!4v1713099999999!5m2!1sen!2sdz"
-              width="100%"
-              height="100%"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2753.6656334348972!2d7.3772963979137245!3d35.795861911554255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12f0c96c9074cd73%3A0x5b1c3666d043faa4!2sCAAT!5e0!3m2!1sfr!2sdz!4v1748442201136!5m2!1sfr!2sdz"         
+                   height="100%"
+                   width="100%"
               loading="lazy"
               allowFullScreen
               className="border-0"
@@ -147,3 +147,4 @@ export default function ContactUs() {
     </section>
   );
 }
+

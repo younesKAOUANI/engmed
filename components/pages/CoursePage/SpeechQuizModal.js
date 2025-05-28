@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Mic, Square } from "lucide-react";
+import { Loader2, Mic, Square } from "lucide-react";
 
 export default function SpeechQuizModal({ isOpen, onClose, sequence, onComplete, userId }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
