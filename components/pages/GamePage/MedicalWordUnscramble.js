@@ -48,10 +48,29 @@ export default function MedicalWordUnscramble({ terms, onComplete }) {
             borderRadius: '0.5rem',
           }}
         >
-          <p style={{ marginBottom: '0.5rem' }}>{term.definition}</p>
-          <p style={{ marginBottom: '0.5rem', fontFamily: 'monospace' }}>
-            Scrambled: {term.scrambled}
-          </p>
+          <p style={{ marginBottom: '0.5rem' }} className='text-xl text-black font-black'>{term.definition}</p>
+          <div style={{ marginBottom: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }} className='justify-center'>
+            {term.scrambled.split('').map((letter, i) => (
+              <span
+                key={i}
+                style={{
+                  display: 'inline-block',
+                  width: '2rem',
+                  height: '2rem',
+                  lineHeight: '2rem',
+                  textAlign: 'center',
+                  border: '1px solid #ccc',
+                  borderRadius: '0.25rem',
+                  backgroundColor: '#f3f4f6',
+                  fontFamily: 'monospace',
+                  fontWeight: 'bold'
+                }}
+                className='text-black'
+              >
+                {letter}
+              </span>
+            ))}
+          </div>
           <input
             type="text"
             value={inputs[index]}
@@ -64,6 +83,9 @@ export default function MedicalWordUnscramble({ terms, onComplete }) {
               width: '100%',
               backgroundColor: solved[index] ? '#d1fae5' : 'white',
             }}
+            className='
+            text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
+            placeholder="Type the unscrambled word"
           />
           <button
             onClick={() => handleCheck(index)}

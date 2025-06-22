@@ -32,20 +32,27 @@ export default function GamePage() {
   };
 
   return (
-    <div className=' text-center'>
-        <LandingHeader/>
+    <div className='text-center min-h-screen' style={{
+      backgroundImage: 'url("/game-bg.jpg")',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
+      <LandingHeader/>
+      <div className='text-white backdrop-blur-sm rounded-md max-w-xl px-4 mx-auto h-full'>
+ 
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }} className='pt-32 p-8'>
         Medical English Game
       </h1>
       {gameCompleted ? (
         <div
-          style={{
-            marginTop: '1.5rem',
-            padding: '1rem',
-            backgroundColor: '#d1fae5',
-            color: '#065f46',
-            borderRadius: '0.5rem',
-          }}
+        style={{
+          marginTop: '1.5rem',
+          padding: '1rem',
+          backgroundColor: '#d1fae5',
+          color: '#065f46',
+          borderRadius: '0.5rem',
+        }}
         >
           <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Congratulations!</h2>
           <p>You've completed all levels. Great job mastering medical English!</p>
@@ -58,9 +65,10 @@ export default function GamePage() {
           <MedicalWordUnscramble
             terms={levels[currentLevel]}
             onComplete={handleLevelComplete}
-          />
+            />
         </div>
       )}
+      </div>
     </div>
   );
 }

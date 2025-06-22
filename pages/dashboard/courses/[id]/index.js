@@ -32,8 +32,10 @@ export default function CourseViewer() {
         const enrichedSequences = data.sequences.map((sequence) => ({
           ...sequence,
           completed:
-            (sequence.quiz?.userQuizzes?.[0]?.passed || false) ||
-            (sequence.speechQuiz?.userSpeechQuizzes?.[0]?.passed || false),
+            sequence.quiz?.userQuizzes?.[0]?.passed ||
+            false ||
+            sequence.speechQuiz?.userSpeechQuizzes?.[0]?.passed ||
+            false,
         }));
         setCourseData({ ...data, sequences: enrichedSequences });
         setActiveSequence(enrichedSequences[0] || null);
@@ -60,7 +62,9 @@ export default function CourseViewer() {
 
   const handleSequenceUpdate = (updatedSequences) => {
     setCourseData((prev) => ({ ...prev, sequences: updatedSequences }));
-    setActiveSequence(updatedSequences.find((seq) => seq.id === activeSequence?.id) || null);
+    setActiveSequence(
+      updatedSequences.find((seq) => seq.id === activeSequence?.id) || null
+    );
   };
 
   const handleExamComplete = async (passed) => {
@@ -97,7 +101,29 @@ export default function CourseViewer() {
   return (
     <main className="flex flex-col min-h-screen bg-gray-100 mt-4">
       <div className="flex-grow flex flex-col gap-4 md:flex-row mb-4">
-        <VideoPlayer activeSequence={activeSequence} />
+        <Tabs
+          defaultValue={activeSequence?.videoUrl ? "video" : "pdf"}
+          className="w-full"
+        >
+          <TabsList>
+            {activeSequence?.video.link && (
+              <TabsTrigger value="video">Video</TabsTrigger>
+            )}
+            {activeSequence?.file.url && (
+              <TabsTrigger value="pdf">PDF</TabsTrigger>
+            )}
+          </TabsList>
+          {activeSequence?.video.link && (
+            <TabsContent value="video">
+              <VideoPlayer activeSequence={activeSequence} />
+            </TabsContent>
+          )}
+          {activeSequence?.file.url && (
+            <TabsContent value="pdf">
+              <PDFViewer pdfUrl={activeSequence.file.url} />
+            </TabsContent>
+          )}
+        </Tabs>
         <CourseSidebar
           sequences={courseData.sequences}
           activeSequence={activeSequence}
@@ -111,9 +137,62 @@ export default function CourseViewer() {
       <CourseDetails courseData={courseData} enroll={false} />
       {certificateEarned && (
         <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded shadow-lg">
-          <p>Congratulations! You’ve earned a certificate for {courseData.title}!</p>
+          <p>
+            Congratulations! You’ve earned a certificate for {courseData.title}!
+          </p>
         </div>
       )}
     </main>
   );
 }
+
+const Tabs = ({ defaultValue, children }) => {
+  const [activeTab, setActiveTab] = useState(defaultValue);
+  return (
+    <div className="w-full">
+      {React.Children.toArray(children)
+        .filter((child) => React.isValidElement(child))
+        .map((child) =>
+          child.type === TabsList
+            ? React.cloneElement(child, { setActiveTab, activeTab })
+            : child.type === TabsContent
+            ? React.cloneElement(child, { activeTab })
+            : child
+        )}
+    </div>
+  );
+};
+
+const TabsList = ({ children, setActiveTab, activeTab }) => (
+  <div className="flex border-b border-gray-200">
+    {React.Children.toArray(children)
+      .filter((child) => React.isValidElement(child))
+      .map((child) => React.cloneElement(child, { setActiveTab, activeTab }))}
+  </div>
+);
+
+const TabsTrigger = ({ value, children, setActiveTab, activeTab }) => (
+  <button
+    className={`px-4 py-2 text-sm font-medium ${
+      activeTab === value
+        ? "border-b-2 border-blue-500 text-blue-500"
+        : "text-gray-500 hover:text-gray-700"
+    }`}
+    onClick={() => setActiveTab(value)}
+  >
+    {children}
+  </button>
+);
+
+const TabsContent = ({ value, children, activeTab }) =>
+  activeTab === value ? <div className="mt-4">{children}</div> : null;
+
+// Custom PDFViewer Component
+const PDFViewer = ({ pdfUrl }) => (
+  <iframe
+    src={pdfUrl}
+    className="w-full h-[600px] border-0"
+    allow="autoplay"
+    title="PDF Viewer"
+  ></iframe>
+);  

@@ -12,7 +12,7 @@ export default function Layout({ children, pageProps }) {
   const router = useRouter();
 
   // Exclude layout for specific routes
-  const noLayoutRoutes = ["/auth/login", "/auth/signup", "/", "/placement-test", "/game"];
+  const noLayoutRoutes = ["/auth/login", "/auth/signup", "/", "/placement-test", "/game", "/game/crosswords"];
   const shouldExcludeLayout = noLayoutRoutes.includes(pathname) || pageProps?.noLayout;
 
   // Redirect based on user role
@@ -22,7 +22,7 @@ export default function Layout({ children, pageProps }) {
 
       if (role === "ADMIN" && !pathname.startsWith("/admin")) {
         router.push("/admin");
-      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard") && pathname !== "/" && pathname !== "/placement-test") {
+      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard") && pathname !== "/" && pathname !== "/placement-test" && !pathname.startsWith("/game")) {
         router.push("/dashboard");
       }
     } else if (status === "unauthenticated" && !shouldExcludeLayout) {
