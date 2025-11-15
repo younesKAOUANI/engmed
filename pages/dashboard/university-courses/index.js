@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { studyYears, courseYears, getCoursesByFilters } from '@/data/universityCourses';
-import { BookOpen, Download, Calendar, Clock, User, Filter, GraduationCap } from 'lucide-react';
+import { BookOpen, Download, Calendar, Clock, User, Filter } from 'lucide-react';
 import Title from '@/components/ui/Title';
 
 export default function UniversityCoursesPage() {
@@ -231,94 +231,5 @@ export default function UniversityCoursesPage() {
         </div>
       </div>
     </main>
-  );
-}
-                      </div>
-                      <div className="absolute top-3 right-3">
-                        <span className="bg-white/90 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold">
-                          {course.semester}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Course Content */}
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">
-                        {course.title}
-                      </h3>
-                      <p className="text-sm text-gray-500 italic mb-3">
-                        {course.titleFr}
-                      </p>
-                      
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {course.description}
-                      </p>
-
-                      {/* Course Meta Info */}
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <User className="w-4 h-4 text-blue-600" />
-                          <span>{course.instructor}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Clock className="w-4 h-4 text-blue-600" />
-                          <span>{course.duration}</span>
-                        </div>
-                      </div>
-
-                      {/* Topics Tags */}
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {course.topics.slice(0, 3).map((topic, index) => (
-                          <span
-                            key={index}
-                            className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium"
-                          >
-                            {topic}
-                          </span>
-                        ))}
-                        {course.topics.length > 3 && (
-                          <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-medium">
-                            +{course.topics.length - 3} more
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Translation Badge */}
-                      <div className="flex items-center gap-2 mb-4 text-xs text-gray-500">
-                        <span className="bg-green-50 text-green-700 px-2 py-1 rounded font-medium">
-                          Translated from {course.translatedFrom}
-                        </span>
-                      </div>
-
-                      {/* Download Button */}
-                      <button
-                        onClick={() => handleDownload(course)}
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all"
-                      >
-                        <Download className="w-5 h-5" />
-                        Download Course
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow-md p-12 text-center">
-                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  No Courses Available
-                </h3>
-                <p className="text-gray-600">
-                  No courses found for the selected study year and academic year combination.
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Try selecting a different year or check back later for updates.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
