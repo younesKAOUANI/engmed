@@ -60,6 +60,27 @@ export default function SettingsPage() {
     e.preventDefault();
     setProfileError("");
     setProfileSuccess("");
+    
+    // Validation
+    const errors = [];
+    if (!name || name.trim().length < 2) {
+      errors.push("Name must be at least 2 characters long");
+    }
+    if (phoneNumber && !/^\+?[\d\s-()]+$/.test(phoneNumber)) {
+      errors.push("Phone number format is invalid");
+    }
+    if (profession === "Student" && yearOfStudy && (yearOfStudy < 1 || yearOfStudy > 10)) {
+      errors.push("Year of study must be between 1 and 10");
+    }
+    if (profilePicture && !profilePicture.match(/^https?:\/\/.+/)) {
+      errors.push("Profile picture must be a valid URL");
+    }
+    
+    if (errors.length > 0) {
+      setProfileError(errors.join(". "));
+      return;
+    }
+    
     setProfileSubmitting(true);
 
     try {
@@ -85,19 +106,30 @@ export default function SettingsPage() {
     e.preventDefault();
     setPasswordError("");
     setPasswordSuccess("");
-    setPasswordSubmitting(true);
 
+    // Validation
+    const errors = [];
+    if (!currentPassword) {
+      errors.push("Current password is required");
+    }
+    if (!newPassword) {
+      errors.push("New password is required");
+    } else if (newPassword.length < 8) {
+      errors.push("New password must be at least 8 characters long");
+    }
     if (newPassword !== confirmPassword) {
-      setPasswordError("New password and confirmation do not match");
-      setPasswordSubmitting(false);
+      errors.push("New password and confirmation do not match");
+    }
+    if (currentPassword && newPassword && currentPassword === newPassword) {
+      errors.push("New password must be different from current password");
+    }
+    
+    if (errors.length > 0) {
+      setPasswordError(errors.join(". "));
       return;
     }
-
-    if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters long");
-      setPasswordSubmitting(false);
-      return;
-    }
+    
+    setPasswordSubmitting(true);
 
     try {
       const response = await axios.put("/api/users/password", {

@@ -26,14 +26,24 @@ export default function Index() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const validatedData = courseSchema.parse(formData);
-    console.log('validatedData:', validatedData);
+    // Clear previous errors
+    setErrors({});
+    
     try {
+      // Validate form data with Zod
+      const validatedData = courseSchema.parse(formData);
+      console.log('validatedData:', validatedData);
+      
+      // Send to API
       const response = await axios.post('/api/courses', validatedData, {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -50,7 +60,8 @@ export default function Index() {
         setErrors(fieldErrors);
       } else {
         console.error('Failed to add course:', err);
-        alert('Failed to add course. Please try again.');
+        const errorMessage = err.response?.data?.error || 'Failed to add course. Please try again.';
+        setErrors({ submit: errorMessage });
       }
     }
   };
@@ -98,6 +109,12 @@ export default function Index() {
 
           />
         </FormCard>
+
+        {errors.submit && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {errors.submit}
+          </div>
+        )}
 
         <Button
           type="submit"

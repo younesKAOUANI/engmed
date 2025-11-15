@@ -3,38 +3,63 @@ import React from "react";
 export default function ContextComponent({ section, currentQuestion }) {
   if (section.name !== "Reading") return null;
 
-  // Find the context for the current question
-  const currentQuestionData = section.questions.reduce((acc, item) => {
-    if (item.type === "reordering") {
-      return [...acc, ...item.questions];
-    } else if (item.type !== "text") {
-      return [...acc, item];
-    }
-    return acc;
-  }, [])[currentQuestion];
+  // Flatten all questions to get proper indexing
+  const allItems = [];
+  let questionCount = 0;
+  let contextForQuestion = null;
 
-  const questionIndex = section.questions.findIndex((q, i) => {
-    if (q.type === "reordering") {
-      return q.questions.includes(currentQuestionData);
+  for (let i = 0; i < section.questions.length; i++) {
+    const item = section.questions[i];
+    
+    if (item.type === "text") {
+      // Store text context
+      contextForQuestion = item.text;
+      allItems.push({ type: "text", content: item.text });
+    } else if (item.type === "reordering") {
+      // Store reordering context
+      contextForQuestion = {
+        type: "reordering",
+        sentences: item.sentences
+      };
+      allItems.push({ type: "reordering", sentences: item.sentences });
+      
+      // Count questions in reordering
+      item.questions.forEach(() => {
+        if (questionCount === currentQuestion) {
+          return;
+        }
+        questionCount++;
+      });
+    } else {
+      // Regular question
+      if (questionCount === currentQuestion) {
+        // Found the current question, use the last stored context
+        break;
+      }
+      questionCount++;
     }
-    return q === currentQuestionData;
-  });
+  }
 
-  // Get the nearest preceding text or reordering context
-  for (let i = questionIndex; i >= 0; i--) {
-    if (section.questions[i].type === "text") {
+  // Render the context
+  if (contextForQuestion) {
+    if (typeof contextForQuestion === "string") {
       return (
-        <div className="text-gray-600 mb-4 whitespace-pre-line">
-          {section.questions[i].text}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+          <h3 className="font-semibold text-gray-800 mb-2">Reading Passage:</h3>
+          <div className="text-gray-700 whitespace-pre-line leading-relaxed">
+            {contextForQuestion}
+          </div>
         </div>
       );
-    }
-    if (section.questions[i].type === "reordering") {
+    } else if (contextForQuestion.type === "reordering") {
       return (
-        <div className="text-gray-600 mb-4 whitespace-pre-line">
-          Topic: The Role of Vaccines
-          <br />
-          {section.questions[i].sentences.join("\n")}
+        <div className="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6 rounded">
+          <h3 className="font-semibold text-gray-800 mb-2">Reorder these sentences:</h3>
+          <div className="text-gray-700 space-y-2">
+            {contextForQuestion.sentences.map((sentence, idx) => (
+              <p key={idx} className="pl-2">{sentence}</p>
+            ))}
+          </div>
         </div>
       );
     }

@@ -42,15 +42,25 @@ export default function Index() {
 
   const [contentType, setContentType] = useState('quiz');
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleVideoChange = (e) => {
     const { name, value } = e.target;
     setVideo((prev) => ({ ...prev, [name]: value }));
+    // Clear error
+    if (errors[`video${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
+      setErrors((prev) => ({ ...prev, [`video${name.charAt(0).toUpperCase() + name.slice(1)}`]: '' }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -61,11 +71,19 @@ export default function Index() {
   const handleQuizChange = (e) => {
     const { name, value } = e.target;
     setQuizData((prev) => ({ ...prev, [name]: value }));
+    // Clear error
+    if (errors[`quiz${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
+      setErrors((prev) => ({ ...prev, [`quiz${name.charAt(0).toUpperCase() + name.slice(1)}`]: '' }));
+    }
   };
 
   const handleSpeechQuizChange = (e) => {
     const { name, value } = e.target;
     setSpeechQuizData((prev) => ({ ...prev, [name]: value }));
+    // Clear error
+    if (errors[`speechQuiz${name.charAt(0).toUpperCase() + name.slice(1)}`]) {
+      setErrors((prev) => ({ ...prev, [`speechQuiz${name.charAt(0).toUpperCase() + name.slice(1)}`]: '' }));
+    }
   };
 
   const handleQuestionChange = (index, e, isSpeechQuiz = false) => {
@@ -100,15 +118,52 @@ export default function Index() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newErrors = {};
-    if (!formData.title) newErrors.title = 'Title is required';
-    if (!formData.order) newErrors.order = 'Order is required';
-    if (contentType === 'quiz' && !quizData.title) newErrors.quizTitle = 'Quiz title is required';
-    if (contentType === 'speechQuiz' && !speechQuizData.title)
-      newErrors.speechQuizTitle = 'Speech quiz title is required';
-    setErrors(newErrors);
+    // Clear previous errors
+    setErrors({});
+    setSubmitError('');
+    setSubmitSuccess('');
 
-    if (Object.keys(newErrors).length > 0) return;
+    const newErrors = {};
+    if (!formData.title || formData.title.trim().length < 3) {
+      newErrors.title = 'Title must be at least 3 characters long';
+    }
+    if (!formData.order || formData.order < 1) {
+      newErrors.order = 'Order must be a positive number';
+    }
+    if (contentType === 'quiz') {
+      if (!quizData.title || quizData.title.trim().length < 3) {
+        newErrors.quizTitle = 'Quiz title must be at least 3 characters long';
+      }
+      // Validate questions
+      quizData.questions.forEach((question, index) => {
+        if (!question.content || question.content.trim().length === 0) {
+          newErrors[`questions[${index}].content`] = 'Question content is required';
+        }
+        const validAnswers = question.answers.filter(a => a.trim() !== '');
+        if (validAnswers.length < 2) {
+          newErrors[`questions[${index}].answers`] = 'At least 2 answers are required';
+        }
+        if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+          newErrors[`questions[${index}].correctAnswer`] = 'Correct answer is required';
+        }
+      });
+    } else if (contentType === 'speechQuiz') {
+      if (!speechQuizData.title || speechQuizData.title.trim().length < 3) {
+        newErrors.speechQuizTitle = 'Speech quiz title must be at least 3 characters long';
+      }
+      // Validate speech quiz questions
+      speechQuizData.questions.forEach((question, index) => {
+        if (!question.content || question.content.trim().length === 0) {
+          newErrors[`speechQuestions[${index}].content`] = 'Question prompt is required';
+        }
+      });
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setSubmitError('Please fix the validation errors before submitting');
+      return;
+    }
 
     const payload = {
       ...formData,
@@ -145,12 +200,31 @@ export default function Index() {
       if (response.ok) {
         const data = await response.json();
         console.log('Sequence created:', data);
+        setSubmitSuccess('Sequence created successfully!');
+        // Reset form
+        setFormData({ title: '', order: '', courseId: id });
+        setVideo({ title: '', duration: '', format: '', link: '', thumbnail: '' });
+        setFile({ fileName: '', url: '' });
+        setQuizData({
+          title: '',
+          duration: '',
+          attempts: '',
+          questions: [{ content: '', answers: ['', '', '', ''], correctAnswer: '', points: '' }],
+        });
+        setSpeechQuizData({
+          title: '',
+          duration: '',
+          attempts: '',
+          questions: [{ content: '' }],
+        });
       } else {
         const errorData = await response.json();
         console.error('Failed to create sequence:', errorData);
+        setSubmitError(errorData.error || 'Failed to create sequence');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
+      setSubmitError('Error submitting form. Please try again.');
     }
   };
 
@@ -398,6 +472,18 @@ export default function Index() {
               </button>
             </div>
           </FormCard>
+        )}
+
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {submitError}
+          </div>
+        )}
+        
+        {submitSuccess && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+            {submitSuccess}
+          </div>
         )}
 
         <button type="submit" className="bg-green-500 text-white px-6 py-3 rounded">

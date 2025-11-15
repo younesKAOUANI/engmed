@@ -13,6 +13,7 @@ export default function AdminEvents() {
   const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({}); // Individual field errors
   const [selectedEvent, setSelectedEvent] = useState(null); // For popup
 
   useEffect(() => {
@@ -36,8 +37,36 @@ export default function AdminEvents() {
 
   const handleAddEvent = async (e) => {
     e.preventDefault();
-    if (!title || !description || !date || !userId) {
-      setError("All fields are required");
+    
+    // Clear previous errors
+    setError("");
+    setErrors({});
+    
+    // Validation
+    const newErrors = {};
+    if (!title || title.trim().length < 3) {
+      newErrors.title = "Title must be at least 3 characters long";
+    }
+    if (!description || description.trim().length < 10) {
+      newErrors.description = "Description must be at least 10 characters long";
+    }
+    if (!date) {
+      newErrors.date = "Date is required";
+    } else {
+      // Check if date is in the future
+      const selectedDate = new Date(date);
+      const now = new Date();
+      if (selectedDate < now) {
+        newErrors.date = "Event date must be in the future";
+      }
+    }
+    if (!userId) {
+      setError("User session not found. Please log in again.");
+      return;
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -48,15 +77,21 @@ export default function AdminEvents() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, title, description, date }),
       });
-      if (!response.ok) throw new Error("Failed to add event");
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to add event");
+      }
+      
       const newEvent = await response.json();
       setEvents([...events, newEvent]);
       setTitle("");
       setDescription("");
       setDate("");
       setError("");
+      setErrors({});
     } catch (err) {
-      setError("Failed to add event");
+      setError(err.message || "Failed to add event");
       console.error(err);
     } finally {
       setLoading(false);
@@ -95,30 +130,52 @@ export default function AdminEvents() {
 
       <form onSubmit={handleAddEvent} className="bg-white p-4 rounded-lg shadow-md mb-6">
         <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Event Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border rounded"
-            disabled={loading}
-          />
-          <textarea
-            placeholder="Event Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 border rounded"
-            rows={3}
-            disabled={loading}
-          />
-          <input
-            type="datetime-local"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full p-2 border rounded"
-            disabled={loading}
-          />
-          {error && <p className="text-red-500">{error}</p>}
+          <div>
+            <input
+              type="text"
+              placeholder="Event Title"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (errors.title) setErrors((prev) => ({ ...prev, title: "" }));
+              }}
+              className={`w-full p-2 border rounded ${errors.title ? 'border-red-500' : ''}`}
+              disabled={loading}
+            />
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+          </div>
+          <div>
+            <textarea
+              placeholder="Event Description"
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (errors.description) setErrors((prev) => ({ ...prev, description: "" }));
+              }}
+              className={`w-full p-2 border rounded ${errors.description ? 'border-red-500' : ''}`}
+              rows={3}
+              disabled={loading}
+            />
+            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+          </div>
+          <div>
+            <input
+              type="datetime-local"
+              value={date}
+              onChange={(e) => {
+                setDate(e.target.value);
+                if (errors.date) setErrors((prev) => ({ ...prev, date: "" }));
+              }}
+              className={`w-full p-2 border rounded ${errors.date ? 'border-red-500' : ''}`}
+              disabled={loading}
+            />
+            {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+          </div>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
           <Button
             type="submit"
             className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:bg-gray-400 flex items-center gap-2"

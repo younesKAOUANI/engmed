@@ -16,6 +16,7 @@ const CourseDetails = () => {
   const [formData, setFormData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({}); // Field validation errors
   const [exam, setExam] = useState({
     title: '',
     duration: '',
@@ -51,6 +52,10 @@ const CourseDetails = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handlePublishedChange = (e) => {
@@ -115,14 +120,65 @@ const CourseDetails = () => {
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Clear previous errors
+    setErrors({});
+    setError(null);
+
+    // Validation
+    const newErrors = {};
+    if (!formData.title || formData.title.trim().length < 3) {
+      newErrors.title = 'Title must be at least 3 characters long';
+    }
+    if (!formData.price || formData.price < 0) {
+      newErrors.price = 'Price must be a positive number';
+    }
+    if (!formData.description || formData.description.trim().length < 10) {
+      newErrors.description = 'Description must be at least 10 characters long';
+    }
+    if (formData.thumbnail && !formData.thumbnail.match(/^https?:\/\/.+/)) {
+      newErrors.thumbnail = 'Thumbnail must be a valid URL';
+    }
+    
+    // Validate exam if exists
+    if (exam && exam.title) {
+      if (!exam.duration || exam.duration < 1) {
+        newErrors.examDuration = 'Exam duration must be at least 1 minute';
+      }
+      if (!exam.passingScore || exam.passingScore < 0 || exam.passingScore > 100) {
+        newErrors.examPassingScore = 'Passing score must be between 0 and 100';
+      }
+      
+      exam.questions.forEach((question, index) => {
+        if (!question.content || question.content.trim().length === 0) {
+          newErrors[`examQuestion${index}`] = `Question #${index + 1} content is required`;
+        }
+        const validAnswers = question.answers.filter(a => a && a.trim() !== '');
+        if (validAnswers.length < 2) {
+          newErrors[`examAnswers${index}`] = `Question #${index + 1} must have at least 2 answers`;
+        }
+        if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+          newErrors[`examCorrectAnswer${index}`] = `Question #${index + 1} must have a correct answer`;
+        }
+      });
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setError('Please fix the validation errors before saving');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const updatedFormData = { ...formData, exam };
       await axios.put(`/api/courses/${id}`, updatedFormData);
-      router.push(`/admin/courses/${id}`);
+      setError(null);
+      alert('Course updated successfully!');
     } catch (err) {
-      setError('Failed to update course');
+      const errorMessage = err.response?.data?.error || 'Failed to update course';
+      setError(errorMessage);
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -188,12 +244,19 @@ const CourseDetails = () => {
           />
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 col-span-2">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+            
             <FormCard title="Basic Information" gridCols={2}>
               <Input
                 label="Title"
                 name="title"
                 value={formData?.title || ''}
                 onChange={handleChange}
+                error={errors.title}
               />
               <Input
                 label="Price"
@@ -201,6 +264,7 @@ const CourseDetails = () => {
                 type="number"
                 value={formData?.price || ''}
                 onChange={handleChange}
+                error={errors.price}
               />
               <Input
                 label="Thumbnail URL"
@@ -208,6 +272,7 @@ const CourseDetails = () => {
                 value={formData?.thumbnail || ''}
                 onChange={handleChange}
                 className="col-span-2"
+                error={errors.thumbnail}
               />
               <Input
                 label="Description"
@@ -215,6 +280,7 @@ const CourseDetails = () => {
                 value={formData?.description || ''}
                 onChange={handleChange}
                 className="col-span-2"
+                error={errors.description}
               />
               <div className="flex items-center space-x-2">
                 <input
@@ -254,12 +320,14 @@ const CourseDetails = () => {
                 placeholder="Duration (minutes)"
                 value={exam.duration}
                 onChange={(e) => handleExamChange('duration', parseInt(e.target.value, 10))}
+                error={errors.examDuration}
               />
               <Input
                 type="number"
                 placeholder="Passing Score (%)"
                 value={exam.passingScore}
                 onChange={(e) => handleExamChange('passingScore', parseInt(e.target.value, 10))}
+                error={errors.examPassingScore}
               />
               <p className="text-md font-bold mt-4 col-span-3">Questions:</p>
               {exam.questions.map((question, questionIndex) => (
@@ -270,6 +338,7 @@ const CourseDetails = () => {
                     onChange={(e) =>
                       handleQuestionChange(questionIndex, 'content', e.target.value)
                     }
+                    error={errors[`examQuestion${questionIndex}`]}
                   />
                   {question.answers.map((answer, answerIndex) => (
                     <Input
@@ -281,12 +350,16 @@ const CourseDetails = () => {
                       }
                     />
                   ))}
+                  {errors[`examAnswers${questionIndex}`] && (
+                    <p className="text-red-500 text-sm mt-1">{errors[`examAnswers${questionIndex}`]}</p>
+                  )}
                   <Input
                     placeholder="Correct Answer"
                     value={question.correctAnswer}
                     onChange={(e) =>
                       handleQuestionChange(questionIndex, 'correctAnswer', e.target.value)
                     }
+                    error={errors[`examCorrectAnswer${questionIndex}`]}
                   />
                   <Input
                     placeholder="Points"
