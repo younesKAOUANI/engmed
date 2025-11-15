@@ -16,11 +16,11 @@ export default function UniversityCoursesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <Title>University Medical Courses</Title>
-        <p className="text-gray-600 text-center max-w-3xl mx-auto mt-2">
+        <p className="text-gray-900 text-center max-w-3xl mx-auto mt-2">
           Access translated medical courses from French to English. Browse by study year and academic year to find the resources you need.
         </p>
       </div>
