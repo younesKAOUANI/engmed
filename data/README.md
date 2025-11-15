@@ -1,10 +1,21 @@
-# Game Data - Medical English Word Unscramble
+# Data Directory
 
-This folder contains the game level data for the Medical English Word Unscramble game.
+This folder contains data files for various features of the EngMed platform.
 
-## Structure
+## Files
 
-### `gameLevels.js`
+### 1. `gameLevels.js`
+Medical English Word Unscramble game data with 50 progressive difficulty levels.
+
+### 2. `universityCourses.js`
+Translated medical courses from French to English for university students.
+
+### 3. `teachers.js`
+Available teachers/instructors for online meeting bookings.
+
+---
+
+## Game Data - Medical English Word Unscramble
 
 Contains 50 levels of medical terminology with progressive difficulty:
 
@@ -62,3 +73,44 @@ The game automatically saves:
 - Total score
 
 All data is stored in localStorage for persistence across sessions.
+
+---
+
+## Teachers Data - Online Meeting System
+
+### `teachers.js`
+
+Contains information about available instructors for one-on-one sessions.
+
+#### Available Teachers (6 instructors):
+- Dr. Sarah Johnson - Medical English Specialist
+- Prof. Michael Chen - Clinical English Instructor
+- Dr. Emma Williams - Healthcare Communication Expert
+- Dr. Ahmed Khalil - Medical English Coach
+- Dr. Lisa Martin - Clinical English Trainer
+- Prof. David Brown - Medical Communication Professor
+
+#### Each Teacher Profile Includes:
+- Name and title
+- Areas of expertise (e.g., Medical Terminology, Clinical Communication)
+- Languages spoken
+- Availability schedule
+- Rating and total sessions completed
+- Biography
+
+#### Meeting Configuration:
+- **Durations**: 30 min, 1 hour, 1.5 hours, 2 hours
+- **Topics**: Medical Terminology, Clinical Communication, Patient Interaction, Medical Writing, Pronunciation Practice, IELTS/TOEFL Preparation, Interview Preparation, Research Presentation, Academic English, General Consultation, Other
+- **Time Slots**: Available from 9:00 AM to 7:30 PM in 30-minute intervals
+
+#### Helper Functions:
+- `getTeacherById(id)`: Returns teacher by ID
+- `getTeachersByExpertise(expertise)`: Filters teachers by expertise area
+
+---
+
+## University Courses Data
+
+### `universityCourses.js`
+
+Contains translated medical courses from French curriculum to English for different study years and academic years.

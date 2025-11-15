@@ -63,6 +63,12 @@ export default function StudentHeader({ joinUs, pathname }) {
               University Courses
             </Link>
             <Link
+              href="/dashboard/online-meetings"
+              className={`hover:text-primary ${pathname === "/dashboard/online-meetings" ? "text-primary" : ""}`}
+            >
+              Book a Meeting
+            </Link>
+            <Link
               href="/dashboard/lets-speak"
               className={`hover:text-primary ${pathname === "/dashboard/lets-speak" ? "text-primary" : ""}`}
             >
