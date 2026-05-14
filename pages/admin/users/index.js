@@ -1,113 +1,170 @@
-"use client";
 import React, { useState, useEffect } from "react";
+import Head from "next/head";
 import { useSession } from "next-auth/react";
-import Button from "../../../components/ui/Button";
-import { X } from "lucide-react";
+import { Search, X, Users } from "lucide-react";
+import Badge from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
+
+function Avatar({ name }) {
+  const initials = (name || "?").split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
+  return (
+    <div className="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center text-[12px] font-semibold shrink-0" aria-hidden="true">
+      {initials}
+    </div>
+  );
+}
+
+const ROLE_BADGE = { ADMIN: "danger", INSTRUCTOR: "brand", STUDENT: "default" };
 
 export default function AdminUsers() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetchUsers();
+    fetch("/api/users")
+      .then(r => r.json())
+      .then(setUsers)
+      .catch(() => setError("Failed to load users"))
+      .finally(() => setLoading(false));
   }, []);
 
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/users");
-      if (!response.ok) throw new Error("Failed to fetch users");
-      const data = await response.json();
-      setUsers(data);
-    } catch (err) {
-      setError("Failed to load users");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUserClick = (user) => {
-    setSelectedUser(user);
-  };
-
-  const closePopup = () => {
-    setSelectedUser(null);
-  };
-
-  if (status === "loading") return <p>Loading...</p>;
-
-  // Client-side role check for UX (not security)
-  if (session?.user?.role !== "ADMIN") {
-    return <p className="text-red-500 p-6">Access denied. Admins only.</p>;
-  }
+  const filtered = users.filter(u =>
+    u.name.toLowerCase().includes(search.toLowerCase()) ||
+    u.email.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Registered Users</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      {loading ? (
-        <p>Loading users...</p>
-      ) : users.length === 0 ? (
-        <p>No users registered yet.</p>
-      ) : (
-        <ul className="space-y-4">
-          {users.map((user) => (
-            <li
-              key={user.id}
-              className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center cursor-pointer hover:bg-gray-50"
-              onClick={() => handleUserClick(user)}
-            >
-              <div>
-                <h2 className="text-xl font-semibold">{user.name}</h2>
-                <p className="text-gray-600">{user.email}</p>
-                <p className="text-sm text-gray-500">Role: {user.role}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+    <>
+      <Head><title>Users — Admin · EngMed</title></Head>
+      <div className="flex flex-col gap-6 pb-12">
 
-      {/* User Details Popup */}
-      {selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">{selectedUser.name} - Details</h2>
-              <Button
-                onClick={closePopup}
-                className="p-1 bg-transparent hover:bg-gray-100 rounded-full"
-              >
-                <X className="w-6 h-6 text-gray-700" />
-              </Button>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="heading-lg text-ink-900">Users</h1>
+            <p className="body-sm text-ink-500 mt-0.5">
+              {loading ? "…" : `${users.length} registered users`}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Badge variant="default" size="md">{users.filter(u => u.role === "STUDENT").length} students</Badge>
+            <Badge variant="brand"   size="md">{users.filter(u => u.role === "INSTRUCTOR").length} instructors</Badge>
+            <Badge variant="danger"  size="md">{users.filter(u => u.role === "ADMIN").length} admins</Badge>
+          </div>
+        </div>
+
+        <div className="relative w-full max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-300" aria-hidden="true" />
+          <input
+            type="search" placeholder="Search by name or email…" value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full h-10 pl-9 pr-3 bg-surface border border-ink-300 rounded-sm text-[15px] placeholder:text-ink-300 focus:outline-none focus:border-brand-600 focus:shadow-focus transition-all"
+          />
+        </div>
+
+        {error && <p className="body-sm text-danger" role="alert">{error}</p>}
+
+        {loading ? (
+          <div className="flex flex-col gap-2">{[...Array(6)].map((_, i) => <div key={i} className="skeleton h-14 rounded-md" />)}</div>
+        ) : filtered.length === 0 ? (
+          <EmptyState icon={Users} title="No users found" description="Try a different search term." />
+        ) : (
+          <div className="bg-surface border border-ink-100 rounded-md shadow-1 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left" aria-label="Users">
+                <thead>
+                  <tr className="border-b border-ink-100 bg-surface2">
+                    {["User", "Role", "Profession", "Specialty", "Verified", "Joined"].map(h => (
+                      <th key={h} className="px-5 py-3 eyebrow text-ink-500">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((u, i) => (
+                    <tr
+                      key={u.id}
+                      onClick={() => setSelected(u)}
+                      className={`${i < filtered.length - 1 ? "border-b border-ink-100" : ""} hover:bg-surface2 transition-colors cursor-pointer`}
+                    >
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={u.name} />
+                          <div className="min-w-0">
+                            <p className="text-[14px] font-medium text-ink-900 truncate">{u.name}</p>
+                            <p className="body-sm text-ink-500 truncate">{u.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        <Badge variant={ROLE_BADGE[u.role] || "default"} size="sm">
+                          {u.role.toLowerCase()}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-3 body-sm text-ink-700">{u.profession || "—"}</td>
+                      <td className="px-5 py-3 body-sm text-ink-700">{u.specialty || "—"}</td>
+                      <td className="px-5 py-3">
+                        <Badge variant={u.isVerified ? "success" : "warning"} size="sm">
+                          {u.isVerified ? "Yes" : "No"}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-3 mono-sm text-ink-500">
+                        {new Date(u.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="space-y-3">
-              <p><strong>ID:</strong> {selectedUser.id}</p>
-              <p><strong>Email:</strong> {selectedUser.email}</p>
-              <p><strong>Phone Number:</strong> {selectedUser.phoneNumber || "Not provided"}</p>
-              <p><strong>Role:</strong> {selectedUser.role}</p>
-              <p><strong>Specialty:</strong> {selectedUser.specialty || "Not specified"}</p>
-              <p><strong>Balance:</strong> ${selectedUser.balance.toFixed(2)}</p>
-              <p><strong>Verified:</strong> {selectedUser.isVerified ? "Yes" : "No"}</p>
-              <p><strong>Created At:</strong> {new Date(selectedUser.createdAt).toLocaleString()}</p>
-              <p><strong>Updated At:</strong> {new Date(selectedUser.updatedAt).toLocaleString()}</p>
-              {selectedUser.profilePicture && (
+          </div>
+        )}
+      </div>
+
+      {/* User detail drawer */}
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" aria-modal="true" role="dialog" aria-labelledby="user-detail-title">
+          <div className="absolute inset-0 bg-ink-900/50 backdrop-blur-sm" onClick={() => setSelected(null)} aria-hidden="true" />
+          <div className="relative bg-surface rounded-t-lg sm:rounded-lg w-full max-w-md shadow-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100">
+              <h2 id="user-detail-title" className="heading-sm text-ink-900">User details</h2>
+              <button onClick={() => setSelected(null)} aria-label="Close" className="p-1.5 rounded-sm text-ink-400 hover:text-ink-900 hover:bg-surface2 transition-colors">
+                <X className="w-5 h-5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="px-6 py-5 flex flex-col gap-5">
+              <div className="flex items-center gap-4">
+                <Avatar name={selected.name} />
                 <div>
-                  <strong>Profile Picture:</strong>
-                  <img
-                    src={selectedUser.profilePicture}
-                    alt="Profile"
-                    className="mt-2 w-24 h-24 rounded-full object-cover"
-                  />
+                  <p className="heading-sm text-ink-900">{selected.name}</p>
+                  <p className="body-sm text-ink-500">{selected.email}</p>
                 </div>
-              )}
+                <Badge variant={ROLE_BADGE[selected.role] || "default"} className="ml-auto">{selected.role.toLowerCase()}</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Phone",    value: selected.phoneNumber || "—" },
+                  { label: "Profession", value: selected.profession || "—" },
+                  { label: "Specialty",  value: selected.specialty || "—" },
+                  { label: "Balance",    value: `${selected.balance.toFixed(2)} DA` },
+                  { label: "Verified",   value: selected.isVerified ? "Yes" : "No" },
+                  { label: "Joined",     value: new Date(selected.createdAt).toLocaleDateString("en-GB") },
+                ].map(({ label, value }) => (
+                  <div key={label} className="bg-surface2 rounded-sm p-3">
+                    <p className="eyebrow text-ink-500 mb-0.5">{label}</p>
+                    <p className="body-sm text-ink-900 font-medium">{value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-surface2 rounded-sm p-3">
+                <p className="eyebrow text-ink-500 mb-0.5">User ID</p>
+                <p className="mono-sm text-ink-500 break-all">{selected.id}</p>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

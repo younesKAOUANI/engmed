@@ -1,343 +1,137 @@
 import React, { useState, useEffect } from "react";
+import Head from "next/head";
 import { useSession } from "next-auth/react";
 import axios from "axios";
-import { Loader2, User, Lock } from "lucide-react";
+import { User, Lock } from "lucide-react";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 
-export default function SettingsPage() {
+function Avatar({ name, size = 56 }) {
+  const initials = (name || "?").split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
+  return (
+    <div
+      className="rounded-full bg-brand-600 text-white flex items-center justify-center font-semibold shrink-0"
+      style={{ width: size, height: size, fontSize: size * 0.35 }}
+      aria-hidden="true"
+    >{initials}</div>
+  );
+}
+
+export default function AdminSettings() {
   const { data: session, status } = useSession();
   const userId = session?.user?.id;
-
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Profile form states
-  const [name, setName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [profession, setProfession] = useState("");
-  const [yearOfStudy, setYearOfStudy] = useState("");
-  const [specialty, setSpecialty] = useState("");
-  const [profilePicture, setProfilePicture] = useState("");
-  const [profileError, setProfileError] = useState("");
-  const [profileSuccess, setProfileSuccess] = useState("");
-  const [profileSubmitting, setProfileSubmitting] = useState(false);
-
-  // Password form states
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState("");
-  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const [tab, setTab] = useState("profile");
+  const [profile, setProfile] = useState({ name: "", phoneNumber: "", specialty: "" });
+  const [profileMsg, setProfileMsg] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
+  const [passMsg, setPassMsg] = useState(null);
+  const [passLoading, setPassLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (status === "loading" || !userId) return;
-      setLoading(true);
-      try {
-        const response = await axios.get("/api/users/me", {
-          params: { userId },
-        });
-        setUserData(response.data);
-        // Populate form fields with fetched data
-        setName(response.data.name);
-        setPhoneNumber(response.data.phoneNumber || "");
-        setProfession(response.data.profession || "");
-        setYearOfStudy(response.data.yearOfStudy || "");
-        setSpecialty(response.data.specialty || "");
-        setProfilePicture(response.data.profilePicture || "");
-      } catch (err) {
-        setError("Failed to fetch profile information");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUserData();
+    if (status === "loading" || !userId) return;
+    axios.get("/api/users/me", { params: { userId } }).then(r => {
+      setUserData(r.data);
+      setProfile({ name: r.data.name || "", phoneNumber: r.data.phoneNumber || "", specialty: r.data.specialty || "" });
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, [userId, status]);
 
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    setProfileError("");
-    setProfileSuccess("");
-    
-    // Validation
-    const errors = [];
-    if (!name || name.trim().length < 2) {
-      errors.push("Name must be at least 2 characters long");
-    }
-    if (phoneNumber && !/^\+?[\d\s-()]+$/.test(phoneNumber)) {
-      errors.push("Phone number format is invalid");
-    }
-    if (profession === "Student" && yearOfStudy && (yearOfStudy < 1 || yearOfStudy > 10)) {
-      errors.push("Year of study must be between 1 and 10");
-    }
-    if (profilePicture && !profilePicture.match(/^https?:\/\/.+/)) {
-      errors.push("Profile picture must be a valid URL");
-    }
-    
-    if (errors.length > 0) {
-      setProfileError(errors.join(". "));
-      return;
-    }
-    
-    setProfileSubmitting(true);
+  const setP = f => e => setProfile(p => ({ ...p, [f]: e.target.value }));
+  const setPw = f => e => setPasswords(p => ({ ...p, [f]: e.target.value }));
 
+  const saveProfile = async (e) => {
+    e.preventDefault();
+    setProfileLoading(true); setProfileMsg(null);
     try {
-      const response = await axios.put("/api/users/profile", {
-        userId,
-        name,
-        phoneNumber,
-        profession,
-        yearOfStudy: profession === "Student" ? parseInt(yearOfStudy) || undefined : undefined,
-        specialty,
-        profilePicture,
-      });
-      setProfileSuccess("Profile updated successfully!");
-      setUserData({ ...userData, name, phoneNumber, profession, yearOfStudy, specialty, profilePicture });
+      await axios.put("/api/users/profile", { userId, ...profile });
+      setProfileMsg({ type: "success", text: "Profile updated." });
     } catch (err) {
-      setProfileError(err.response?.data?.error || "Failed to update profile");
-    } finally {
-      setProfileSubmitting(false);
-    }
+      setProfileMsg({ type: "error", text: err.response?.data?.error || "Failed to update." });
+    } finally { setProfileLoading(false); }
   };
 
-  const handlePasswordSubmit = async (e) => {
+  const savePassword = async (e) => {
     e.preventDefault();
-    setPasswordError("");
-    setPasswordSuccess("");
-
-    // Validation
-    const errors = [];
-    if (!currentPassword) {
-      errors.push("Current password is required");
-    }
-    if (!newPassword) {
-      errors.push("New password is required");
-    } else if (newPassword.length < 8) {
-      errors.push("New password must be at least 8 characters long");
-    }
-    if (newPassword !== confirmPassword) {
-      errors.push("New password and confirmation do not match");
-    }
-    if (currentPassword && newPassword && currentPassword === newPassword) {
-      errors.push("New password must be different from current password");
-    }
-    
-    if (errors.length > 0) {
-      setPasswordError(errors.join(". "));
-      return;
-    }
-    
-    setPasswordSubmitting(true);
-
+    if (passwords.newPass !== passwords.confirm) return setPassMsg({ type: "error", text: "Passwords don't match." });
+    if (passwords.newPass.length < 8) return setPassMsg({ type: "error", text: "Min. 8 characters." });
+    setPassLoading(true); setPassMsg(null);
     try {
-      const response = await axios.put("/api/users/password", {
-        userId,
-        currentPassword,
-        newPassword,
-      });
-      setPasswordSuccess("Password updated successfully!");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      await axios.put("/api/users/password", { userId, currentPassword: passwords.current, newPassword: passwords.newPass });
+      setPassMsg({ type: "success", text: "Password updated." });
+      setPasswords({ current: "", newPass: "", confirm: "" });
     } catch (err) {
-      setPasswordError(err.response?.data?.error || "Failed to update password");
-    } finally {
-      setPasswordSubmitting(false);
-    }
+      setPassMsg({ type: "error", text: err.response?.data?.error || "Failed to update." });
+    } finally { setPassLoading(false); }
   };
 
-  if (status === "unauthenticated") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-red-500">Please log in to view your settings.</p>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[40vh]">
+      <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-2xl mx-auto px-4">
-        {/* Profile Information */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-xl font-semibold mb-4 flex items-center">
-            <User className="w-6 h-6 mr-2 text-blue-500" />
-            Update Profile Information
-          </h2>
-          <form onSubmit={handleProfileSubmit} className="space-y-4">
-            <div>
-              <label className="block text-gray-600">Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-gray-600">Email (Cannot be changed)</label>
-              <p className="text-gray-800">{userData.email}</p>
-            </div>
-            <div>
-              <label className="block text-gray-600">Phone Number</label>
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-600">Profession</label>
-              <select
-                value={profession}
-                onChange={(e) => setProfession(e.target.value)}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Profession (optional)</option>
-                <option value="Student">Student</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Professional">Professional</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            {profession === "Student" && (
-              <div>
-                <label className="block text-gray-600">Year of Study</label>
-                <input
-                  type="number"
-                  value={yearOfStudy}
-                  onChange={(e) => setYearOfStudy(e.target.value)}
-                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="1"
-                  max="10"
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-gray-600">Specialty</label>
-              <input
-                type="text"
-                value={specialty}
-                onChange={(e) => setSpecialty(e.target.value)}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-600">Profile Picture URL</label>
-              <input
-                type="text"
-                value={profilePicture}
-                onChange={(e) => setProfilePicture(e.target.value)}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {profilePicture && (
-                <div className="mt-2">
-                  <img
-                    src={profilePicture}
-                    alt="Profile Preview"
-                    className="w-24 h-24 rounded-full object-cover"
-                    onError={(e) => (e.target.src = "/default-profile.png")} // Fallback if URL fails
-                  />
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-gray-600">Role</label>
-              <p className="text-gray-800">{userData.role}</p>
-            </div>
-            <div>
-              <label className="block text-gray-600">Account Created</label>
-              <p className="text-gray-800">{new Date(userData.createdAt).toLocaleDateString()}</p>
-            </div>
-            {profileError && <p className="text-red-500">{profileError}</p>}
-            {profileSuccess && <p className="text-green-500">{profileSuccess}</p>}
-            <button
-              type="submit"
-              disabled={profileSubmitting}
-              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 flex items-center justify-center"
-            >
-              {profileSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Update Profile"}
-            </button>
-          </form>
+    <>
+      <Head><title>Settings — Admin · EngMed</title></Head>
+      <div className="max-w-2xl pb-12">
+        <h1 className="heading-lg text-ink-900 mb-6">Account settings</h1>
+
+        {/* Profile strip */}
+        <div className="bg-surface border border-ink-100 rounded-md p-5 shadow-1 flex items-center gap-4 mb-6">
+          <Avatar name={userData?.name} />
+          <div>
+            <p className="heading-sm text-ink-900">{userData?.name}</p>
+            <p className="body-sm text-ink-500">{userData?.email}</p>
+            <p className="mono-sm text-ink-300 mt-0.5">{userData?.role}</p>
+          </div>
         </div>
 
-        {/* Change Password Form */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 flex items-center">
-            <Lock className="w-6 h-6 mr-2 text-blue-500" />
-            Change Password
-          </h2>
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="currentPassword" className="block text-gray-600">
-                Current Password
-              </label>
-              <input
-                type="password"
-                id="currentPassword"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="newPassword" className="block text-gray-600">
-                New Password
-              </label>
-              <input
-                type="password"
-                id="newPassword"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" className="block text-gray-600">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            {passwordError && <p className="text-red-500">{passwordError}</p>}
-            {passwordSuccess && <p className="text-green-500">{passwordSuccess}</p>}
-            <button
-              type="submit"
-              disabled={passwordSubmitting}
-              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 flex items-center justify-center"
-            >
-              {passwordSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Update Password"}
+        {/* Tabs */}
+        <div className="flex border-b border-ink-100 mb-6 gap-1">
+          {[{ id: "profile", label: "Profile", icon: User }, { id: "password", label: "Password", icon: Lock }].map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => setTab(id)} role="tab" aria-selected={tab === id}
+              className={`flex items-center gap-2 px-4 py-2.5 text-[14px] font-medium border-b-2 transition-colors ${tab === id ? "border-brand-600 text-brand-600" : "border-transparent text-ink-500 hover:text-ink-900"}`}>
+              <Icon className="w-4 h-4" aria-hidden="true" />{label}
             </button>
-          </form>
+          ))}
         </div>
+
+        {tab === "profile" && (
+          <form onSubmit={saveProfile} className="bg-surface border border-ink-100 rounded-md p-6 shadow-1 flex flex-col gap-4">
+            <Input label="Full name" value={profile.name} onChange={setP("name")} required />
+            <div className="flex flex-col gap-1.5">
+              <label className="eyebrow text-ink-700">Email address</label>
+              <p className="body-base text-ink-900 py-2">{userData?.email}</p>
+              <p className="body-sm text-ink-500">Email cannot be changed.</p>
+            </div>
+            <Input label="Phone number" type="tel" value={profile.phoneNumber} onChange={setP("phoneNumber")} placeholder="+213 …" />
+            <Input label="Specialty" value={profile.specialty} onChange={setP("specialty")} placeholder="e.g. Medical English" />
+            {profileMsg && (
+              <p role={profileMsg.type === "error" ? "alert" : "status"} className={`body-sm ${profileMsg.type === "success" ? "text-success" : "text-danger"}`}>
+                {profileMsg.text}
+              </p>
+            )}
+            <Button type="submit" variant="primary" size="md" loading={profileLoading} className="self-start">Save changes</Button>
+          </form>
+        )}
+
+        {tab === "password" && (
+          <form onSubmit={savePassword} className="bg-surface border border-ink-100 rounded-md p-6 shadow-1 flex flex-col gap-4">
+            <Input label="Current password" type="password" value={passwords.current} onChange={setPw("current")} required />
+            <Input label="New password" type="password" value={passwords.newPass} onChange={setPw("newPass")} helper="Minimum 8 characters" required />
+            <Input label="Confirm new password" type="password" value={passwords.confirm} onChange={setPw("confirm")} required />
+            {passMsg && (
+              <p role={passMsg.type === "error" ? "alert" : "status"} className={`body-sm ${passMsg.type === "success" ? "text-success" : "text-danger"}`}>
+                {passMsg.text}
+              </p>
+            )}
+            <Button type="submit" variant="primary" size="md" loading={passLoading} className="self-start">Update password</Button>
+          </form>
+        )}
       </div>
-    </div>
+    </>
   );
 }
