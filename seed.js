@@ -165,7 +165,7 @@ const COURSES = [
     title: "Clinical Communication for Doctors",
     description:
       "Advanced communication skills for clinical environments — ward rounds, handovers, referrals, and breaking bad news. Targets B2–C1 learners.",
-    price: 2500,
+    price: 25,
     rating: 4.9,
     totalStudents: 184,
     thumbnail: "https://placehold.co/600x400/ECF6F6/0B5D63?text=Clinical+Communication",
@@ -292,7 +292,7 @@ const COURSES = [
     title: "Medical Research Writing in English",
     description:
       "Learn to write abstracts, case reports, and research papers that meet international publication standards. C1–C2 level.",
-    price: 3500,
+    price: 35,
     rating: 4.7,
     totalStudents: 97,
     thumbnail: "https://placehold.co/600x400/F6ECD2/C58A2A?text=Research+Writing",
@@ -385,7 +385,7 @@ const COURSES = [
     title: "Pharmacy English — Drug Counselling",
     description:
       "Essential English for pharmacists: explaining prescriptions, drug interactions, dosage instructions, and counselling patients effectively.",
-    price: 1800,
+    price: 18,
     rating: 4.6,
     totalStudents: 145,
     thumbnail: "https://placehold.co/600x400/E6F4EC/147651?text=Pharmacy+English",

@@ -79,7 +79,7 @@ export default function AdminCourses() {
                         </div>
                       </td>
                       <td className="px-5 py-4 mono-sm text-ink-700 whitespace-nowrap">
-                        {c.price === 0 ? <Badge variant="success" size="sm">Free</Badge> : `${c.price.toLocaleString()} DA`}
+                        {c.price === 0 ? <Badge variant="success" size="sm">Free</Badge> : `€${c.price.toLocaleString()}`}
                       </td>
                       <td className="px-5 py-4">
                         <span className="flex items-center gap-1.5 body-sm text-ink-700">

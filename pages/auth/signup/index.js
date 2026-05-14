@@ -143,7 +143,7 @@ export default function Signup() {
                   <p className="body-sm text-ink-500 mt-1">Get started with EngMed for free.</p>
                 </div>
                 <Input label="Full name" value={form.name} onChange={set("name")} placeholder="Dr. Ahmed Bensalem" required />
-                <Input label="Email address" type="email" value={form.email} onChange={set("email")} placeholder="you@hospital.dz" required />
+                <Input label="Email address" type="email" value={form.email} onChange={set("email")} placeholder="you@clinic.fr" required />
                 <div className="flex flex-col gap-1.5">
                   <Input label="Password" type="password" value={form.password} onChange={set("password")} placeholder="Min. 8 characters" required />
                   <PasswordStrength password={form.password} />

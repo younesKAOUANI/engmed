@@ -147,7 +147,7 @@ export default function AdminUsers() {
                   { label: "Phone",    value: selected.phoneNumber || "—" },
                   { label: "Profession", value: selected.profession || "—" },
                   { label: "Specialty",  value: selected.specialty || "—" },
-                  { label: "Balance",    value: `${selected.balance.toFixed(2)} DA` },
+                  { label: "Balance",    value: `€${selected.balance.toFixed(2)}` },
                   { label: "Verified",   value: selected.isVerified ? "Yes" : "No" },
                   { label: "Joined",     value: new Date(selected.createdAt).toLocaleDateString("en-GB") },
                 ].map(({ label, value }) => (

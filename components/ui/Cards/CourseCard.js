@@ -52,7 +52,7 @@ export default function CourseCard({ course, enrolled = false }) {
           {price === 0 ? (
             <span className="text-success font-semibold text-[13px]">Free</span>
           ) : (
-            <span className="mono-sm text-ink-900">{price.toLocaleString()} DA</span>
+            <span className="mono-sm text-ink-900">€{price.toLocaleString()}</span>
           )}
           <Link
             href={href}

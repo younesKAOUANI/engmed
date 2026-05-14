@@ -57,7 +57,7 @@ export default function ContactUs() {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="ahmed@hospital.dz"
+                placeholder="you@clinic.fr"
                 required
               />
               <Input
@@ -101,7 +101,7 @@ export default function ContactUs() {
           {/* Map */}
           <div className="rounded-lg overflow-hidden shadow-2 border border-ink-100 h-[480px]">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2753.6656334348972!2d7.3772963979137245!3d35.795861911554255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12f0c96c9074cd73%3A0x5b1c3666d043faa4!2sCAAT!5e0!3m2!1sfr!2sdz!4v1748442201136!5m2!1sfr!2sdz"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d88888.88!2d4.8357!3d45.7640!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f4ea516ae922e1%3A0x408ab2ae4bb21f0!2sLyon%2C%20France!5e0!3m2!1sen!2sfr!4v1748442201136!5m2!1sen!2sfr"
               height="100%"
               width="100%"
               loading="lazy"

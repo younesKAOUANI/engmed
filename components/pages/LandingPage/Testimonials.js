@@ -49,7 +49,7 @@ export default function Testimonials() {
         data-aos-delay="300"
       >
         <p className="text-gray-600 italic">“EngMed helped me explain treatments...”</p>
-        <p className="mt-4 font-semibold">Dr. Karim, Algiers</p>
+        <p className="mt-4 font-semibold">Dr. Karim, Lyon</p>
       </div>
       <div
         className="p-6 bg-white rounded-lg shadow"
@@ -57,7 +57,7 @@ export default function Testimonials() {
         data-aos-delay="400"
       >
         <p className="text-gray-600 italic">“I presented my research in English...”</p>
-        <p className="mt-4 font-semibold">Dr. Fatima, Oran</p>
+        <p className="mt-4 font-semibold">Dr. Fatima, Paris</p>
       </div>
       <div
         className="p-6 bg-white rounded-lg shadow"
@@ -65,7 +65,7 @@ export default function Testimonials() {
         data-aos-delay="500"
       >
         <p className="text-gray-600 italic">“It fits my schedule perfectly...”</p>
-        <p className="mt-4 font-semibold">Dr. Youssef, Constantine</p>
+        <p className="mt-4 font-semibold">Dr. Youssef, Marseille</p>
       </div>
     </div>
     <p className="text-gray-600 mt-6 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="600">

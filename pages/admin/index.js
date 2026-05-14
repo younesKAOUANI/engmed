@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                         <p className="body-sm text-ink-500">{c.totalStudents.toLocaleString()} learners · ★ {c.rating.toFixed(1)}</p>
                       </div>
                       <span className="mono-sm text-ink-500 shrink-0">
-                        {c.price === 0 ? "Free" : `${c.price.toLocaleString()} DA`}
+                        {c.price === 0 ? "Free" : `€${c.price.toLocaleString()}`}
                       </span>
                     </li>
                   ))}

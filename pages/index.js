@@ -13,7 +13,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 font-sans">
       <Head>
         <title>EngMed - Improve Your Medical English</title>
-        <meta name="description" content="Master medical English with EngMed, designed for Algerian doctors" />
+        <meta name="description" content="Master medical English with EngMed — designed for healthcare professionals in France" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

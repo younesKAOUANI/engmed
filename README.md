@@ -6,7 +6,7 @@
 
 ### Medical English Learning Platform for Healthcare Professionals
 
-*A full-stack LMS built for Algerian doctors, medical students, and healthcare workers who need to master English in a clinical context.*
+*A full-stack LMS built for doctors, medical students, and healthcare workers in France who need to master English in a clinical context.*
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
@@ -24,7 +24,7 @@
 EngMed is a specialised English Learning Management System (LMS) designed specifically for the medical community. Unlike generic language apps, every piece of content — quizzes, vocabulary, exams, speaking exercises — is grounded in real medical and clinical contexts.
 
 **Who is it for?**
-- Algerian medical students preparing for international residencies or exams
+- Medical students in France preparing for international residencies or exams
 - Doctors and nurses needing to communicate with international colleagues
 - Healthcare professionals who write research papers or attend global conferences
 - Anyone in the medical field who wants to go from "functional" to "fluent" in English
@@ -243,7 +243,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Portfolio Note
 
-EngMed was built as a full-stack portfolio project to demonstrate end-to-end product engineering skills — from database schema design and REST API development to React component architecture and UX. The domain (medical English for Algerian healthcare workers) was chosen deliberately to show the ability to build for a specific, real-world user base rather than a generic demo.
+EngMed was built as a full-stack portfolio project to demonstrate end-to-end product engineering skills — from database schema design and REST API development to React component architecture and UX. The domain (medical English for healthcare workers in France) was chosen deliberately to show the ability to build for a specific, real-world user base rather than a generic demo.
 
 **Key engineering decisions showcased:**
 - Role-based access control (ADMIN / INSTRUCTOR / STUDENT) at the API and UI layer

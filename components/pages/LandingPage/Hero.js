@@ -32,7 +32,7 @@ export default function Hero() {
             </h1>
 
             <p className="body-lg text-ink-700 max-w-lg">
-              Built for Algerian doctors, nurses, and medical students who need
+              Built for doctors, nurses, and medical students in France who need
               precise English — for clinical practice, research, and international
               collaboration.
             </p>

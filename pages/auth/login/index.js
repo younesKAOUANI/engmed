@@ -49,7 +49,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@hospital.dz"
+                placeholder="you@clinic.fr"
                 required
                 autoComplete="email"
               />

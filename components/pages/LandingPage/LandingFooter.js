@@ -52,7 +52,7 @@ export default function LandingFooter() {
               <span className="font-display text-[22px] italic text-ink-900">EngMed</span>
             </Link>
             <p className="body-sm text-ink-500">
-              Medical English for Algerian doctors, nurses, and healthcare students.
+              Medical English for doctors, nurses, and healthcare students in France.
               CEFR-aligned, certificate-issuing, speech-evaluated.
             </p>
             <a

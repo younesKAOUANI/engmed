@@ -21,19 +21,19 @@ export default function About() {
           <div className="flex flex-col gap-5">
             <span className="eyebrow text-brand-600">Our mission</span>
             <h2 className="display-md text-ink-900">
-              Built by Algerians,<br />for Algerians
+              Built for France's<br />medical community
             </h2>
             <p className="body-lg text-ink-700">
               Hana Boulahrouz — TEFL/TESOL certified, 8 years teaching at the
-              University of Constantine — founded EngMed after watching brilliant
-              Algerian doctors struggle to publish research and communicate with
+              University of Lyon — founded EngMed after watching brilliant
+              French doctors struggle to publish research and communicate with
               international colleagues.
             </p>
             <p className="body-lg text-ink-700">
-              Together with a team of medical and language specialists, she
-              designed EngMed around the specific vocabulary, communication
-              patterns, and fluency gaps that healthcare professionals in Algeria
-              face every day.
+              Together with a team of medical and language specialists based in
+              Lyon, she designed EngMed around the specific vocabulary,
+              communication patterns, and fluency gaps that healthcare
+              professionals in France face every day.
             </p>
 
             <div className="grid grid-cols-2 gap-4 mt-4">
@@ -41,7 +41,7 @@ export default function About() {
                 { value: "TEFL/TESOL", label: "Certified instructors" },
                 { value: "8 years",   label: "Teaching experience" },
                 { value: "A1–C2",     label: "Full CEFR range" },
-                { value: "Algeria",   label: "Locally grounded" },
+                { value: "Lyon, FR",  label: "Based in France" },
               ].map(({ value, label }) => (
                 <div key={label} className="bg-surface rounded-sm p-4 border border-ink-100">
                   <p className="heading-sm text-brand-600">{value}</p>
