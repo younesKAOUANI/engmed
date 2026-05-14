@@ -88,6 +88,24 @@ export default function Login() {
               >
                 Sign in
               </Button>
+
+              {/* Quick-access demo buttons */}
+              <div className="flex gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => signIn("credentials", { redirect: true, email: "admin@engmed.com", password: "123456" })}
+                  className="flex-1 h-9 rounded-sm border border-ink-200 bg-surface2 text-ink-600 text-[13px] font-medium hover:border-brand-500 hover:text-brand-700 transition-colors"
+                >
+                  Quick Login — Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => signIn("credentials", { redirect: true, email: "student@engmed.com", password: "123456789" })}
+                  className="flex-1 h-9 rounded-sm border border-ink-200 bg-surface2 text-ink-600 text-[13px] font-medium hover:border-brand-500 hover:text-brand-700 transition-colors"
+                >
+                  Quick Login — Student
+                </button>
+              </div>
             </form>
 
             <p className="body-sm text-ink-500 text-center mt-6">
