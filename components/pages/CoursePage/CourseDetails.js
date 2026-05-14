@@ -75,7 +75,7 @@ function EnrollButton({ courseData }) {
         userId: session.user.id,
         courseId: courseData.id,
       });
-      console.log("Enrollment successful:", response.data);
+      
       setIsEnrolled(true); // Update status after successful enrollment
     } catch (err) {
       setError("Failed to enroll. Please try again.");

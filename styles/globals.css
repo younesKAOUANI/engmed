@@ -2,23 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
-*{
-    transition: all 0.3s;
+/* ─── Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+  /* Brand — surgical teal */
+  --brand-700: #0B5D63;
+  --brand-600: #10797F;
+  --brand-500: #1B9AA0;
+  --brand-200: #B8DDDF;
+  --brand-50:  #ECF6F6;
+
+  /* Accent — citrine gold (achievements, certs) */
+  --accent-600: #C58A2A;
+  --accent-100: #F6ECD2;
+
+  /* Neutrals — warm paper */
+  --paper:      #FAF8F4;
+  --surface:    #FFFFFF;
+  --surface-2:  #F2EFE8;
+  --ink-900:    #171513;
+  --ink-700:    #3D3934;
+  --ink-500:    #6E6862;
+  --ink-300:    #B6B0A8;
+  --ink-100:    #E8E3DA;
+
+  /* Semantic */
+  --success:     #147651;
+  --success-bg:  #E6F4EC;
+  --warning:     #9A6700;
+  --warning-bg:  #FBF1D7;
+  --danger:      #B42318;
+  --danger-bg:   #FBEAE8;
+  --info:        #1F5FBF;
+
+  /* Shadows */
+  --shadow-1: 0 1px 0 oklch(0% 0 0 / 0.04), 0 1px 2px oklch(0% 0 0 / 0.04);
+  --shadow-2: 0 2px 4px oklch(0% 0 0 / 0.04), 0 6px 12px oklch(0% 0 0 / 0.06);
+  --shadow-3: 0 4px 8px oklch(0% 0 0 / 0.05), 0 16px 32px oklch(0% 0 0 / 0.08);
+  --shadow-4: 0 8px 16px oklch(0% 0 0 / 0.06), 0 32px 64px oklch(0% 0 0 / 0.12);
+  --ring-focus: 0 0 0 3px oklch(62% 0.12 195 / 0.35);
+
+  /* Radii */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-pill: 999px;
 }
 
-.section {
-    @apply  container mx-auto py-12 px-4 md:px-0;
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+html {
+  background: var(--paper);
+  color: var(--ink-900);
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
+body {
+  background: var(--paper);
+  color: var(--ink-900);
+  min-height: 100vh;
+}
 
+p { text-wrap: pretty; }
+h1, h2 { text-wrap: balance; }
+
+/* ─── Skip link ──────────────────────────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  top: -999px;
+  left: 16px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--brand-600);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+.skip-link:focus { top: 16px; }
+
+/* ─── Focus ──────────────────────────────────────────────────────────────── */
+:focus { outline: none; }
+:focus-visible { outline: none; box-shadow: var(--ring-focus); border-radius: var(--radius-xs); }
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-300); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-500); }
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
 @keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-5px); }
-  100% { transform: translateX(0); }
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-5px); }
+  75%       { transform: translateX(5px); }
+}
+.animate-shake { animation: shake 0.5s; }
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
+.skeleton {
+  background: var(--ink-100);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
 }
 
-.animate-shake {
-  animation: shake 0.5s;
+@keyframes recording-pulse {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* ─── Utility classes ────────────────────────────────────────────────────── */
+.section { @apply container mx-auto py-12 px-4 md:px-0; }
+
+.display-xl  { font-family: var(--font-display); font-size: 64px; line-height: 68px; font-weight: 400; }
+.display-lg  { font-family: var(--font-display); font-size: 48px; line-height: 56px; font-weight: 400; }
+.display-md  { font-family: var(--font-display); font-size: 36px; line-height: 44px; font-weight: 400; }
+.heading-lg  { font-size: 28px; line-height: 36px; font-weight: 600; }
+.heading-md  { font-size: 22px; line-height: 30px; font-weight: 600; }
+.heading-sm  { font-size: 18px; line-height: 26px; font-weight: 600; }
+.body-lg     { font-size: 17px; line-height: 28px; }
+.body-base   { font-size: 15px; line-height: 24px; }
+.body-sm     { font-size: 13px; line-height: 20px; }
+.mono-sm     { font-family: var(--font-mono, ui-monospace); font-size: 13px; line-height: 20px; font-weight: 500; }
+.eyebrow     { font-size: 12px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

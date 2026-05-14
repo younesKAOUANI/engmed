@@ -27,7 +27,7 @@ export default function QuizModal({ isOpen, onClose, sequence, onComplete }) {
   useEffect(() => {
     if (isOpen && sequence?.quiz && userId && !resultMessage) { // Only fetch if no result yet
       const fetchQuizData = async () => {
-        console.log("Opening quiz modal for sequence:", sequence.id, "Quiz ID:", sequence.quiz.id);
+        
         setLoading(true);
         setHasPassed(false);
         setResultMessage(null);
@@ -38,10 +38,10 @@ export default function QuizModal({ isOpen, onClose, sequence, onComplete }) {
           const quizResponse = await fetch(`/api/quizzes/${sequence.quiz.id}`);
           if (!quizResponse.ok) throw new Error("Failed to fetch quiz");
           const quizData = await quizResponse.json();
-          console.log("Quiz data received:", quizData);
+          
 
           const shuffledQuestions = shuffleArray(quizData.questions || []);
-          console.log("Shuffled questions:", shuffledQuestions);
+          
           setQuestions(shuffledQuestions);
 
           const userQuizResponse = await fetch(`/api/user-quizzes/check`, {
@@ -51,7 +51,7 @@ export default function QuizModal({ isOpen, onClose, sequence, onComplete }) {
           });
           if (!userQuizResponse.ok) throw new Error("Failed to check quiz status");
           const userQuizData = await userQuizResponse.json();
-          console.log("Quiz status check:", userQuizData);
+          
           if (userQuizData.passed) {
             setHasPassed(true);
             setResultMessage("You have already passed this quiz.");
@@ -88,13 +88,13 @@ export default function QuizModal({ isOpen, onClose, sequence, onComplete }) {
 
   const handleAnswerChange = (questionId, answer) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
-    console.log("Answer selected:", { questionId, answer });
+    
   };
 
   const handleSubmit = async () => {
     setSubmitting(true);
     setResultMessage(null);
-    console.log("Submitting quiz with answers:", answers);
+    
 
     let score = 0;
     questions.forEach((q) => {
@@ -123,7 +123,7 @@ export default function QuizModal({ isOpen, onClose, sequence, onComplete }) {
       setResultMessage(message);
       setHasPassed(passed);
       onComplete(sequence.id, passed);
-      console.log("Quiz submission result:", { passed, score, totalPoints, message });
+      
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       setResultMessage("Error submitting quiz");
@@ -186,7 +186,7 @@ export default function QuizModal({ isOpen, onClose, sequence, onComplete }) {
                   setResultMessage(null);
                   setTimeLeft(300);
                   setQuestions(shuffleArray(questions));
-                  console.log("Retrying quiz, reshuffled questions:", questions);
+                  
                 }}
                 className="mt-2 mx-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
               >

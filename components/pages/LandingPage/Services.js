@@ -1,119 +1,86 @@
 "use client";
-
+import React, { useState } from "react";
 import Image from "next/image";
-import { useState } from "react";
 
 const services = [
-    {
-        title: "Interactive, specialized courses",
-        description:
-            "Engage with tailored lessons designed for medical professionals, featuring real-world scenarios and interactive activities.",
-        image: "/practice.jpg",
-    },
-    {
-        title: "Flexible and gamified learning",
-        description:
-            "Enjoy a dynamic learning experience with game-like challenges and instant feedback, making progress fun and motivating using a technology based approach.",
-        image: "/speak.jpg",
-    },
-    {
-        title: "Real speaking practice",
-        description:
-            "Build your confidence by practicing real conversations and medical dialogues, anytime and anywhere, to fit your busy schedule.",
-        image: "/flexible.jpg",
-    },
+  {
+    label: "Specialized Courses",
+    title: "Interactive, medically-grounded lessons",
+    description:
+      "Engage with tailored lessons designed for medical professionals — featuring real clinical scenarios, vocabulary exercises, and structured progression from A1 to C2.",
+    image: "/practice.jpg",
+  },
+  {
+    label: "Gamified Learning",
+    title: "Flexible and gamified progress",
+    description:
+      "Enjoy a dynamic learning experience with 50-level word-unscramble games, crossword puzzles, and instant feedback that makes progress feel rewarding, not like homework.",
+    image: "/speak.jpg",
+  },
+  {
+    label: "Speaking Practice",
+    title: "Real speaking — reviewed by instructors",
+    description:
+      "Record your spoken answers directly in the browser. Your instructor reviews your audio, scores your pronunciation and fluency, and gives personal feedback within 48 hours.",
+    image: "/flexible.jpg",
+  },
 ];
 
-
 export default function Services() {
-    const [activeTab, setActiveTab] = useState(0);
+  const [active, setActive] = useState(0);
 
-    return (
-        <section
-            id="tools"
-            className="py-20 relative text-gray-800"
-            style={{
-                backgroundImage: "url('/whychooseus.jpg')",
-                backgroundSize: "cover",
-                backgroundPosition: "center 30%",
-            }}
-            data-aos="fade-up"
-        >
-            <div className="absolute inset-0 bg-gray-100/80"></div>
-            <div className="container mx-auto px-4 relative z-10 flex flex-col items-center">
-                <div className="text-center mb-12">
-                    <h2
-                        className="text-4xl font-bold mb-4"
-                        data-aos="fade-up"
-                        data-aos-delay="100"
-                    >
-                        How EngMed Helps You Succeed
-                    </h2>
-                    <p
-                        className="text-lg text-gray-700 max-w-2xl mx-auto"
-                        data-aos="fade-up"
-                        data-aos-delay="200"
-                    >
-                        EngMed fits into your life as a doctor or a student. Whether you’re in a clinic or
-                        a hospital, our platform makes English practical and achievable.
-                    </p>
-                </div>
-                <div
-                    className="flex justify-center gap-4 mb-8 flex-wrap"
-                    data-aos="fade-up"
-                    data-aos-delay="300"
-                >
-                    {services.map((service, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setActiveTab(index)}
-                            className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 shadow-sm backdrop-blur border border-gray-300 hover:bg-white hover:text-primary ${activeTab === index
-                                    ? "bg-white text-primary border-primary"
-                                    : "bg-white/70 text-gray-600"
-                                }`}
-                        >
-                            {service.title}
-                        </button>
-                    ))}
-                </div>
-                <div
-                    className="max-w-4xl mx-auto grid md:grid-cols-2 items-start gap-10 bg-white/90 rounded-2xl shadow-sm backdrop-blur border border-gray-300 p-8"
-                    data-aos="zoom-in"
-                    data-aos-delay="400"
-                >
-                    <div className="space-y-4">
-                        <h3 className="text-2xl font-semibold text-primary">
-                            {services[activeTab].title}
-                        </h3>
-                        <p className="text-gray-700 text-lg">
-                            {services[activeTab].description}
-                        </p>
-                    </div>
-                    <div className="relative w-full h-64 md:h-80 rounded-xl overflow-hidden shadow">
-                        <Image
-                            src={services[activeTab].image}
-                            alt={services[activeTab].title}
-                            fill
-                            className="object-cover"
-                        />
-                    </div>
-                </div>
-                <p
-                    className="text-gray-700 text-center mt-10 max-w-2xl mx-auto"
-                    data-aos="fade-up"
-                    data-aos-delay="500"
-                >
-                    Focus on one skill at a time—like patient vocab—to see quick results.
-                </p>
-                <a
-                    href="/auth/login"
-                    className="inline-block mt-4 bg-primary text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
-                    data-aos="fade-up"
-                    data-aos-delay="600"
-                >
-                    Start Learning Now
-                </a>
+  return (
+    <section id="tools" className="py-24 bg-paper">
+      <div className="max-w-content mx-auto px-6">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <span className="eyebrow text-brand-600 mb-3 block">Platform features</span>
+          <h2 className="display-md text-ink-900 mb-4">How EngMed helps you succeed</h2>
+          <p className="body-lg text-ink-500 max-w-xl mx-auto">
+            Whether you're in a clinic or studying for exams, EngMed fits around
+            your schedule and clinical reality.
+          </p>
+        </div>
+
+        {/* Pill tabs */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10" role="tablist" aria-label="Feature tabs">
+          {services.map(({ label }, i) => (
+            <button
+              key={label}
+              role="tab"
+              aria-selected={active === i}
+              aria-controls={`tab-panel-${i}`}
+              onClick={() => setActive(i)}
+              className={`px-4 py-2 rounded-pill text-[14px] font-semibold transition-all duration-150 border ${
+                active === i
+                  ? "bg-brand-600 text-white border-brand-600"
+                  : "bg-surface text-ink-700 border-ink-200 hover:border-brand-500 hover:text-brand-600"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content panel */}
+        {services.map(({ title, description, image }, i) => (
+          <div
+            key={i}
+            id={`tab-panel-${i}`}
+            role="tabpanel"
+            hidden={active !== i}
+            className="grid md:grid-cols-2 items-center gap-10 bg-surface border border-ink-100 rounded-lg p-8 shadow-1"
+          >
+            <div className="flex flex-col gap-4">
+              <h3 className="heading-lg text-ink-900">{title}</h3>
+              <p className="body-lg text-ink-700">{description}</p>
             </div>
-        </section>
-    );
+            <div className="relative w-full h-64 md:h-80 rounded-md overflow-hidden shadow-2">
+              <Image src={image} alt={title} fill className="object-cover" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }

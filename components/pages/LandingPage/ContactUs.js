@@ -1,150 +1,117 @@
 import React, { useState } from "react";
+import Button from "@/components/ui/Button";
+import Input, { Textarea } from "@/components/ui/Input";
 
 export default function ContactUs() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
+  const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState("");
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("Sending...");
+    setStatus("sending");
     try {
-      const response = await fetch("/api/contact", {
+      await fetch("/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      if (response.ok) {
-        setStatus("Message sent successfully!");
-        setFormData({ name: "", email: "", subject: "", message: "" });
-      } else {
-        setStatus("Failed to send message.");
-      }
-    } catch (error) {
-      setStatus("Failed to send message.");
+      setStatus("sent");
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch {
+      setStatus("error");
     }
   };
 
   return (
-    <section
-      id="start"
-      className="relative py-16 text-center"
-      style={{
-        backgroundImage: "url('/images/hero-bg.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-      data-aos="fade-up"
-    >
-      <div className="absolute inset-0 bg-primary/80"></div>
-      <div className="container mx-auto px-4 relative z-10 text-white">
-        <h2
-          className="text-3xl font-bold mb-6"
-          data-aos="fade-up"
-          data-aos-delay="100"
-        >
-          Ready to Improve Your English?
-        </h2>
-        <p
-          className="mb-8 max-w-2xl mx-auto"
-          data-aos="fade-up"
-          data-aos-delay="200"
-        >
-          Sign up in seconds and start learning with EngMed. Try it free and see the difference.
-        </p>
-        <a
-          href="/auth/login"
-          className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-100 transition inline-block"
-          data-aos="fade-up"
-          data-aos-delay="300"
-        >
-          Sign Up Free
-        </a>
-        <p
-          className="text-sm mt-4"
-          data-aos="fade-up"
-          data-aos-delay="400"
-        >
-          No payment needed to start
-        </p>
-        <div className="mt-12 flex flex-col lg:flex-row gap-8 items-start justify-center h-full">
-          <form
-            onSubmit={handleSubmit}
-            className="w-full lg:w-1/2 bg-white rounded-lg p-6 text-left flex flex-col gap-6 text-gray-800 shadow-lg h-[500px]"
-            data-aos="fade-right"
-            data-aos-delay="500"
-          >
-            <input
-              type="text"
-              name="name"
-              placeholder="Name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-            <input
-              type="text"
-              name="subject"
-              placeholder="Subject"
-              value={formData.subject}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-            <textarea
-              name="message"
-              placeholder="Message"
-              value={formData.message}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg"
-              rows={5}
-            ></textarea>
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
-            >
-              Contact Us
-            </button>
-            {status && <p className="text-sm mt-2">{status}</p>}
-          </form>
-          <div
-            className="w-full lg:w-1/2 h-[500px] rounded-lg overflow-hidden shadow-lg"
-            data-aos="fade-left"
-            data-aos-delay="600"
-          >
+    <section id="contact" className="py-24 bg-paper">
+      <div className="max-w-content mx-auto px-6">
+        <div className="text-center mb-12">
+          <span className="eyebrow text-brand-600 block mb-3">Get in touch</span>
+          <h2 className="display-md text-ink-900 mb-4">Ready to start?</h2>
+          <p className="body-lg text-ink-500 max-w-xl mx-auto">
+            Have questions about EngMed? We'd love to hear from you.
+            Sign up free or drop us a message and we'll respond within 24 hours.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          {/* Form */}
+          <div className="bg-surface border border-ink-100 rounded-lg p-8 shadow-1">
+            <h3 className="heading-md text-ink-900 mb-6">Send us a message</h3>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <Input
+                label="Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Dr. Ahmed Bensalem"
+                required
+              />
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="ahmed@hospital.dz"
+                required
+              />
+              <Input
+                label="Subject"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                placeholder="How can we help?"
+              />
+              <Textarea
+                label="Message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                rows={5}
+                placeholder="Tell us about your situation…"
+                required
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                loading={status === "sending"}
+                className="w-full mt-2"
+              >
+                Send message
+              </Button>
+              {status === "sent" && (
+                <p className="body-sm text-success text-center" role="status">
+                  Message sent — we'll reply within 24 hours.
+                </p>
+              )}
+              {status === "error" && (
+                <p className="body-sm text-danger text-center" role="alert">
+                  Something went wrong. Please try again.
+                </p>
+              )}
+            </form>
+          </div>
+
+          {/* Map */}
+          <div className="rounded-lg overflow-hidden shadow-2 border border-ink-100 h-[480px]">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2753.6656334348972!2d7.3772963979137245!3d35.795861911554255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12f0c96c9074cd73%3A0x5b1c3666d043faa4!2sCAAT!5e0!3m2!1sfr!2sdz!4v1748442201136!5m2!1sfr!2sdz"         
-                   height="100%"
-                   width="100%"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2753.6656334348972!2d7.3772963979137245!3d35.795861911554255!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12f0c96c9074cd73%3A0x5b1c3666d043faa4!2sCAAT!5e0!3m2!1sfr!2sdz!4v1748442201136!5m2!1sfr!2sdz"
+              height="100%"
+              width="100%"
               loading="lazy"
               allowFullScreen
-              className="border-0"
-            ></iframe>
+              title="EngMed location map"
+              className="border-0 w-full h-full"
+            />
           </div>
         </div>
       </div>
     </section>
   );
 }
-

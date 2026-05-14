@@ -1,9 +1,10 @@
 import React from "react";
+import { cn } from "@/lib/cn";
 
-export default function Title({children}) {
+export default function Title({ children, className, as: Tag = "h1" }) {
   return (
-    <div className="py-5 bg-white rounded-md text-center my-4 shadow-md">
-      <h1 className="text-3xl text-primary font-bold ">{children}</h1>
-    </div>
+    <Tag className={cn("display-md text-ink-900", className)}>
+      {children}
+    </Tag>
   );
 }

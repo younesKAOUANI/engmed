@@ -1,113 +1,138 @@
-import Button from "@/components/ui/Button";
-import Image from "next/image";
-import React from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
+"use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { ChevronDown, Gamepad2, ClipboardList, Home, BookOpen, Info, X, Menu } from "lucide-react";
+import Button from "@/components/ui/Button";
+
+const navLinks = [
+  { href: "/#challenges", label: "Your Needs" },
+  { href: "/#tools",      label: "How It Works" },
+  { href: "/#who-we-are", label: "About" },
+];
 
 export default function LandingHeader() {
   const { data: session, status } = useSession();
-  const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
+  const [gamesOpen, setGamesOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [gamesDropdownOpen, setGamesDropdownOpen] = React.useState(false);
-  
-  const toggleGamesDropdown = () => {
-    setGamesDropdownOpen(!gamesDropdownOpen);
-  };
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const dashHref = status === "authenticated"
+    ? (session?.user?.role === "ADMIN" ? "/admin" : "/dashboard")
+    : "/auth/login";
+  const dashLabel = status === "authenticated"
+    ? (session?.user?.role === "ADMIN" ? "Admin Panel" : "My Learning")
+    : "Join EngMed →";
 
   return (
     <header
-      className="fixed z-50 w-full bg-white/40 backdrop-blur-md shadow-md"
-      data-aos="fade-down"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-paper border-b border-ink-100 shadow-1"
+          : "bg-paper/80 backdrop-blur-md"
+      }`}
     >
-      <div className="text-black container mx-auto p-4 flex justify-between items-center">
-        <div
-          className="flex items-center gap-1"
-          data-aos="fade-right"
-          data-aos-delay="100"
-        >
-          <Image src="/logo.png" width={48} height={48} alt="EngMed Logo" />
-          <span className="text-xl font-bold">EngMed</span>
-        </div>
-        <nav
-          className="hidden md:flex space-x-6"
-          data-aos="fade-left"
-          data-aos-delay="200"
-        >
-          <a href="#" className="text-lg font-semibold hover:text-blue-300">
-            Home
-          </a>
-          <a
-            href="#challenges"
-            className="text-lg font-semibold hover:text-blue-300"
-          >
-            Your Needs
-          </a>
-          <a href="#tools" className="text-lg font-semibold hover:text-blue-300">
-            How It Works
-          </a>
-          <a
-            href="#who-we-are"
-            className="text-lg font-semibold hover:text-blue-300"
-          >
-            About
-          </a>
-        </nav>
-        <div className="flex items-center gap-4">
+      <div className="max-w-content mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="EngMed home">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" className="w-8 h-8" aria-hidden="true" />
+          <span className="font-display text-[22px] italic text-ink-900 leading-none">EngMed</span>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
+          {navLinks.map(({ href, label }) => (
+            <a
+              key={href}
+              href={href}
+              className="px-3 py-1.5 rounded-sm text-[15px] font-medium text-ink-700 hover:text-ink-900 hover:bg-surface2 transition-colors duration-150"
+            >
+              {label}
+            </a>
+          ))}
+          {/* Games dropdown */}
           <div className="relative">
-            <button 
-              onClick={toggleGamesDropdown}
-              className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95 flex items-center"
+            <button
+              onClick={() => setGamesOpen((v) => !v)}
+              aria-expanded={gamesOpen}
+              aria-haspopup="true"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-sm text-[15px] font-medium text-ink-700 hover:text-ink-900 hover:bg-surface2 transition-colors duration-150"
             >
               Mini Games
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className={`h-4 w-4 ml-1 transition-transform ${gamesDropdownOpen ? 'rotate-180' : ''}`} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${gamesOpen ? "rotate-180" : ""}`} aria-hidden="true" />
             </button>
-            {gamesDropdownOpen && (
-              <div className="absolute bg-white shadow-md rounded-md top-12 right-0 w-40 z-50">
-                <Link href="/game" className="block px-4 py-2 hover:bg-blue-100 text-gray-800 rounded-t-md">
-                  Wordscapes
+            {gamesOpen && (
+              <div className="absolute top-full left-0 mt-1.5 w-44 bg-surface border border-ink-100 rounded-md shadow-3 py-1 z-50">
+                <Link href="/game" onClick={() => setGamesOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-[14px] text-ink-700 hover:bg-brand-50 hover:text-brand-700 transition-colors">
+                  <Gamepad2 className="w-4 h-4" aria-hidden="true" /> Word Unscramble
                 </Link>
-                <Link href="/game/crosswords" className="block px-4 py-2 hover:bg-blue-100 text-gray-800 rounded-b-md">
-                  Crosswords
+                <Link href="/game/crosswords" onClick={() => setGamesOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-[14px] text-ink-700 hover:bg-brand-50 hover:text-brand-700 transition-colors">
+                  <ClipboardList className="w-4 h-4" aria-hidden="true" /> Crosswords
                 </Link>
               </div>
             )}
           </div>
-          <Link href="/placement-test" 
-                className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95">
-            Free English Test
+        </nav>
+
+        {/* Right CTAs */}
+        <div className="hidden md:flex items-center gap-2">
+          <Link
+            href="/placement-test"
+            className="px-3 py-1.5 text-[15px] font-medium text-brand-600 hover:text-brand-700 hover:underline underline-offset-2 transition-colors"
+          >
+            Free placement test
           </Link>
-          <JoinUsButton session={session} status={status} router={router} />
+          <Button variant="primary" size="md" href={dashHref} disabled={status === "loading"}>
+            {status === "loading" ? "…" : dashLabel}
+          </Button>
         </div>
+
+        {/* Mobile menu toggle */}
+        <button
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+          className="md:hidden p-1.5 rounded-sm text-ink-700 hover:bg-surface2 transition-colors"
+        >
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden bg-paper border-t border-ink-100 px-6 py-4 flex flex-col gap-2">
+          {navLinks.map(({ href, label }) => (
+            <a key={href} href={href} onClick={() => setMobileOpen(false)}
+              className="py-2 text-[15px] font-medium text-ink-700 border-b border-ink-100">
+              {label}
+            </a>
+          ))}
+          <Link href="/game" onClick={() => setMobileOpen(false)}
+            className="py-2 text-[15px] font-medium text-ink-700 border-b border-ink-100">
+            Word Unscramble
+          </Link>
+          <Link href="/game/crosswords" onClick={() => setMobileOpen(false)}
+            className="py-2 text-[15px] font-medium text-ink-700 border-b border-ink-100">
+            Crosswords
+          </Link>
+          <Link href="/placement-test" onClick={() => setMobileOpen(false)}
+            className="py-2 text-[15px] text-brand-600 font-medium">
+            Free Placement Test
+          </Link>
+          <Button variant="primary" size="md" href={dashHref} className="mt-2 w-full">
+            {dashLabel}
+          </Button>
+        </div>
+      )}
     </header>
-  );
-}
-
-function JoinUsButton({ session, status, router }) {
-  let href = "/auth/login";
-  let buttonText = "Join Us";
-
-  if (status === "authenticated") {
-    href = "/dashboard";
-    buttonText = session.user.role === "STUDENT" ? "Your Learning" : "Admin Panel";
-  }
-
-  return (
-    <Button
-      className="font-semibold hover:text-gray-700 hover:shadow-md hover:bg-primary bg-blue-600 text-white px-4 py-2 rounded-md hover:scale-95"
-      disabled={status === "loading"}
-      href={href}
-    >
-      {status === "loading" ? "Loading..." : buttonText}
-    </Button>
   );
 }

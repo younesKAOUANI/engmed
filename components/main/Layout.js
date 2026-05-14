@@ -1,28 +1,25 @@
 import React, { useEffect } from "react";
-import AdminSidebar from "./AdminSidebar"; // Updated import
-import Header from "./Header";
-import StudentHeader from "./StudentHeader"; // New import for StudentHeader
+import AdminSidebar from "./AdminSidebar";
+import StudentHeader from "./StudentHeader";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
+import { ToastProvider } from "@/components/ui/Toast";
 
-export default function Layout({ children, pageProps }) {
+const NO_LAYOUT_ROUTES = ["/auth/login", "/auth/signup", "/", "/placement-test", "/game", "/game/crosswords"];
+
+export default function Layout({ children }) {
   const { pathname } = useRouter();
   const { data: session, status } = useSession();
   const router = useRouter();
+  const shouldExcludeLayout = NO_LAYOUT_ROUTES.includes(pathname);
 
-  // Exclude layout for specific routes
-  const noLayoutRoutes = ["/auth/login", "/auth/signup", "/", "/placement-test", "/game", "/game/crosswords"];
-  const shouldExcludeLayout = noLayoutRoutes.includes(pathname) || pageProps?.noLayout;
-
-  // Redirect based on user role
   useEffect(() => {
     if (status === "authenticated") {
       const role = session?.user?.role;
-
       if (role === "ADMIN" && !pathname.startsWith("/admin")) {
         router.push("/admin");
-      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard") && pathname !== "/" && pathname !== "/placement-test" && !pathname.startsWith("/game")) {
+      } else if (role === "STUDENT" && !pathname.startsWith("/dashboard") && !NO_LAYOUT_ROUTES.includes(pathname)) {
         router.push("/dashboard");
       }
     } else if (status === "unauthenticated" && !shouldExcludeLayout) {
@@ -31,47 +28,44 @@ export default function Layout({ children, pageProps }) {
   }, [status, session, pathname, router, shouldExcludeLayout]);
 
   if (shouldExcludeLayout) {
-    return <>{children}</>;
-  }
-
-  const renderSidebarAndHeader = () => {
-    if (session?.user?.role === "ADMIN") {
-      return (
-        <>
-          <Head>
-            <title>Admin Dashboard</title>
-          </Head>
-          <AdminSidebar />
-          <Header joinUs={true} pathname={pathname} />
-        </>
-      );
-    }
     return (
-      <>
-        <Head>
-          <title>Dashboard</title>
-        </Head>
-        <StudentHeader joinUs={true} pathname={pathname} /> {/* Use StudentHeader for students */}
-      </>
+      <ToastProvider>
+        <a href="#main-content" className="skip-link">Skip to content</a>
+        {children}
+      </ToastProvider>
     );
-  };
+  }
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p>Loading...</p>
+      <div className="flex items-center justify-center h-screen bg-paper">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+          <p className="body-sm text-ink-500">Loading…</p>
+        </div>
       </div>
     );
   }
 
+  const isAdmin = session?.user?.role === "ADMIN";
+
   return (
-    <div className="flex bg-gray-100 h-screen">
-      {/* Sidebar and Header */}
-      {renderSidebarAndHeader()}
-      {/* Main Content */}
-      <div className={`${session?.user?.role === "ADMIN" ? "ml-12" : "pt-20 bg-gradient-to-b from-primary/90 to-primary/50"} w-full p-4 overflow-y-auto`}>
-      {children}
+    <ToastProvider>
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <div className="flex bg-paper min-h-screen">
+        {isAdmin && <AdminSidebar />}
+        <div className={`flex flex-col flex-1 min-w-0 ${isAdmin ? "ml-60" : ""}`}>
+          {!isAdmin && <StudentHeader />}
+          <main
+            id="main-content"
+            className={`flex-1 overflow-y-auto p-6 ${!isAdmin ? "pt-24" : "pt-6"}`}
+          >
+            <div className="max-w-content mx-auto w-full">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 }

@@ -1,86 +1,87 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
-import { Loader2, Award } from "lucide-react";
+import Head from "next/head";
+import { Award, Download } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
+import Button from "@/components/ui/Button";
+
+function CertCard({ cert }) {
+  return (
+    <div className="group relative bg-surface border border-ink-100 rounded-md shadow-1 overflow-hidden transition-all duration-220 hover:-translate-y-0.5 hover:shadow-3">
+      {/* Paper texture header */}
+      <div className="bg-surface2 border-b border-ink-100 px-6 pt-6 pb-4 text-center">
+        <div className="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center mx-auto mb-3">
+          <Award className="w-6 h-6 text-accent-600" aria-hidden="true" />
+        </div>
+        <p className="eyebrow text-accent-600">Certificate of Completion</p>
+      </div>
+      {/* Details */}
+      <div className="px-6 py-5 flex flex-col gap-3 text-center">
+        <h2 className="heading-sm text-ink-900 line-clamp-2">{cert.course.title}</h2>
+        <p className="body-sm text-ink-500">
+          Issued {new Date(cert.issuedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+        </p>
+        <p className="mono-sm text-ink-300">ID: {cert.id.slice(-12).toUpperCase()}</p>
+      </div>
+      {/* Actions — appear on hover */}
+      <div className="px-6 pb-5">
+        <Button variant="secondary" size="sm" className="w-full gap-2">
+          <Download className="w-3.5 h-3.5" aria-hidden="true" />
+          Download PDF
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export default function CertificatesPage() {
-  const { data: session, status } = useSession(); // Get user session
+  const { data: session, status } = useSession();
   const userId = session?.user?.id;
-
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchCertificates = async () => {
-      if (status === "loading" || !userId) return; // Wait for session to load
-      setLoading(true);
-      try {
-        const response = await axios.get("/api/certificates/user", {
-          params: { userId },
-        });
-        setCertificates(response.data);
-      } catch (err) {
-        setError("Failed to fetch certificates");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCertificates();
+    if (status === "loading" || !userId) return;
+    axios.get("/api/certificates/user", { params: { userId } })
+      .then((r) => setCertificates(r.data))
+      .finally(() => setLoading(false));
   }, [userId, status]);
-
-  if (status === "unauthenticated") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Please log in to view your certificates.</p>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">{error}</p>
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-8xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center mb-8">Your Certificates</h1>
+    <>
+      <Head><title>Certificates — EngMed</title></Head>
+      <div className="pb-12">
+        <div className="mb-8">
+          <h1 className="heading-lg text-ink-900">My Certificates</h1>
+          <p className="body-sm text-ink-500 mt-1">
+            {certificates.length === 0
+              ? "Complete a course exam to earn your first certificate."
+              : `${certificates.length} certificate${certificates.length > 1 ? "s" : ""} earned`}
+          </p>
+        </div>
+
         {certificates.length === 0 ? (
-          <p className="text-center text-gray-600">You haven’t earned any certificates yet.</p>
+          <EmptyState
+            icon={Award}
+            title="No certificates yet"
+            description="Pass a course's final exam to earn a verifiable certificate of completion."
+            action={{ label: "Browse courses", href: "/dashboard/courses" }}
+          />
         ) : (
-          <div className="grid gap-6 md:grid-cols-3">
-            {certificates.map((certificate) => (
-              <div
-                key={certificate.id}
-                className="bg-white p-6 rounded-lg shadow-md flex items-start space-x-4"
-              >
-                <Award className="w-10 h-10 text-green-500 flex-shrink-0" />
-                <div>
-                  <h2 className="text-xl font-semibold">{certificate.course.title}</h2>
-                  <p className="text-gray-600">
-                    Issued on: {new Date(certificate.issuedAt).toLocaleDateString()}
-                  </p>
-                  {/* Optional: Add a download link or certificate preview */}
-                  <p className="text-sm text-gray-500 mt-2">Certificate ID: {certificate.id}</p>
-                </div>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {certificates.map((cert) => <CertCard key={cert.id} cert={cert} />)}
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

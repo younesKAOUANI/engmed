@@ -19,7 +19,7 @@ export default function CourseViewer() {
   const [error, setError] = useState(null);
   const [certificateEarned, setCertificateEarned] = useState(false);
 
-  console.log(courseData, "courseData");
+  
   useEffect(() => {
     const fetchCourseData = async () => {
       if (!id || !userId) return;

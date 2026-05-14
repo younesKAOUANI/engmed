@@ -1,39 +1,57 @@
+import React from "react";
 import Image from "next/image";
 
-const About = () => {
+export default function About() {
   return (
-    <section
-      id="who-we-are"
-      className="py-16 relative bg-gradient-to-b from-cyan-600 to-primary/80"
-      data-aos="fade-up"
-    >
-      <div className="container mx-auto flex items-center justify-center gap-12">
-        <div
-          className="px-4 text-left relative z-10 w-1/2"
-          data-aos="fade-right"
-          data-aos-delay="100"
-        >
-          <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
-            Built by Algerians, for Algerians
-          </h2>
-          <p className="text-gray-100 mb-8 text-lg">
-            Hana Boulahrouz a TEFL/TESOL-certified tutor and her team of experts based in Algeria, working
-            to help students, professionals, and teacher of medecine, dentistry, pharmacy and paramedics like you shine on the global stage. We’ve designed EngMed to understand your needs and
-            support your goals.
-          </p>
-        </div>
-        <div data-aos="fade-left" data-aos-delay="200">
-          <Image
-            src="/services.jpg"
-            alt="Our team"
-            width={400}
-            height={400}
-            className="rounded-lg shadow-lg"
-          />
+    <section id="who-we-are" className="py-24 bg-surface2">
+      <div className="max-w-content mx-auto px-6">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* Image */}
+          <div className="relative">
+            <Image
+              src="/services.jpg"
+              alt="EngMed team — medical English specialists"
+              width={540}
+              height={420}
+              className="rounded-lg w-full object-cover shadow-3"
+            />
+          </div>
+
+          {/* Text */}
+          <div className="flex flex-col gap-5">
+            <span className="eyebrow text-brand-600">Our mission</span>
+            <h2 className="display-md text-ink-900">
+              Built by Algerians,<br />for Algerians
+            </h2>
+            <p className="body-lg text-ink-700">
+              Hana Boulahrouz — TEFL/TESOL certified, 8 years teaching at the
+              University of Constantine — founded EngMed after watching brilliant
+              Algerian doctors struggle to publish research and communicate with
+              international colleagues.
+            </p>
+            <p className="body-lg text-ink-700">
+              Together with a team of medical and language specialists, she
+              designed EngMed around the specific vocabulary, communication
+              patterns, and fluency gaps that healthcare professionals in Algeria
+              face every day.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              {[
+                { value: "TEFL/TESOL", label: "Certified instructors" },
+                { value: "8 years",   label: "Teaching experience" },
+                { value: "A1–C2",     label: "Full CEFR range" },
+                { value: "Algeria",   label: "Locally grounded" },
+              ].map(({ value, label }) => (
+                <div key={label} className="bg-surface rounded-sm p-4 border border-ink-100">
+                  <p className="heading-sm text-brand-600">{value}</p>
+                  <p className="body-sm text-ink-500 mt-0.5">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default About;
+}
