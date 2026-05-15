@@ -1,23 +1,16 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { mongoId } from "@/lib/validations";
+import { z } from "zod";
 
-const prisma = new PrismaClient();
+export default apiHandler({ auth: true, methods: ["GET"] }, async (req, res) => {
+  const { id } = z.object({ id: mongoId }).parse(req.query);
 
-export default async function handler(req, res) {
-  const { id } = req.query;
+  const quiz = await prisma.quiz.findUnique({
+    where:   { id },
+    include: { questions: { orderBy: { order: "asc" } } },
+  });
+  if (!quiz) return res.status(404).json({ error: "Quiz not found." });
 
-  if (req.method === "GET") {
-    try {
-      const quiz = await prisma.quiz.findUnique({
-        where: { id },
-        include: { questions: true },
-      });
-      if (!quiz) return res.status(404).json({ error: "Quiz not found" });
-      res.status(200).json(quiz);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch quiz" });
-    }
-  } else {
-    res.setHeader("Allow", ["GET"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+  return res.status(200).json(quiz);
+});

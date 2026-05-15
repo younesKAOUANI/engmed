@@ -1,45 +1,27 @@
-import { PrismaClient } from "@prisma/client";
-import { getSession } from "next-auth/react";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { updateProfileSchema } from "@/lib/validations";
 
-const prisma = new PrismaClient();
+// Updates the authenticated user's own profile.
+// Never trusts userId from the request body — always uses session.user.id.
+export default apiHandler({ auth: true, methods: ["PUT"] }, async (req, res, { session }) => {
+  const body = updateProfileSchema.parse(req.body);
 
-export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  const updated = await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      ...(body.name       !== undefined ? { name:       body.name }       : {}),
+      ...(body.phoneNumber !== undefined ? { phoneNumber:body.phoneNumber }: {}),
+      ...(body.profession !== undefined ? { profession: body.profession }  : {}),
+      ...(body.yearOfStudy!== undefined ? { yearOfStudy:body.yearOfStudy }: {}),
+      ...(body.specialty  !== undefined ? { specialty:  body.specialty }   : {}),
+    },
+    select: {
+      id: true, name: true, email: true, phoneNumber: true,
+      profession: true, yearOfStudy: true, specialty: true,
+      profilePicture: true, role: true, updatedAt: true,
+    },
+  });
 
-  const session = await getSession({ req });
-  const userId = req.query.userId;
-
-  if (!session || session.user.id !== userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phoneNumber: true,
-        profession: true,
-        yearOfStudy: true,
-        specialty: true,
-        profilePicture: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    return res.status(200).json(user);
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    return res.status(500).json({ error: "Failed to fetch user" });
-  }
-}
+  return res.status(200).json(updated);
+});

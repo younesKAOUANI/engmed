@@ -1,33 +1,16 @@
-import { PrismaClient } from "@prisma/client";
-import { ObjectId } from "mongodb";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { mongoId } from "@/lib/validations";
+import { z } from "zod";
 
-const prisma = new PrismaClient();
+export default apiHandler({ auth: true, methods: ["POST"] }, async (req, res, { session }) => {
+  const { courseId } = z.object({ courseId: mongoId }).parse(req.body);
 
-export default async function handler(req, res) {
-  if (req.method === "POST") {
-    const { userId, courseId, issuedAt } = req.body;
+  const certificate = await prisma.certificate.upsert({
+    where:  { userId_courseId: { userId: session.user.id, courseId } },
+    update: {},
+    create: { userId: session.user.id, courseId },
+  });
 
-    if (!userId || !courseId || !issuedAt) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    if (!ObjectId.isValid(userId) || !ObjectId.isValid(courseId)) {
-      return res.status(400).json({ error: "Invalid userId or courseId format" });
-    }
-
-    try {
-      const certificate = await prisma.certificate.upsert({
-        where: { userId_courseId: { userId, courseId } },
-        update: { issuedAt },
-        create: { userId, courseId, issuedAt },
-      });
-      res.status(201).json(certificate);
-    } catch (error) {
-      console.error("Error saving certificate:", error);
-      res.status(500).json({ error: "Failed to save certificate" });
-    }
-  } else {
-    res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+  return res.status(201).json(certificate);
+});

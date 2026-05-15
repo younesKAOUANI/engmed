@@ -403,3 +403,5 @@ const CourseDetails = () => {
 };
 
 export default CourseDetails;
+
+export { adminServerSideProps as getServerSideProps } from "@/lib/admin-auth";

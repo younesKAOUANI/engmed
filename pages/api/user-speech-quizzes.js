@@ -1,76 +1,66 @@
-import { PrismaClient } from "@prisma/client";
 import multer from "multer";
 import { join, basename } from "path";
-import { mkdir, writeFile } from "fs/promises"; // Updated import to include mkdir
+import { mkdir, writeFile } from "fs/promises";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { mongoId } from "@/lib/validations";
 
-// Configure multer for file uploads
+export const config = { api: { bodyParser: false } };
+
+// Allowed MIME types for audio submissions
+const ALLOWED_MIMES = new Set(["audio/webm", "audio/ogg", "audio/wav", "audio/mpeg"]);
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits:  { fileSize: MAX_FILE_SIZE },
+  fileFilter(_req, file, cb) {
+    if (!ALLOWED_MIMES.has(file.mimetype)) {
+      return cb(new Error("Only audio files are accepted (webm, ogg, wav, mp3)."));
+    }
+    cb(null, true);
+  },
 });
 
-const prisma = new PrismaClient();
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  upload.single("audio")(req, res, async (err) => {
-    if (err) {
-      console.error("Multer error:", err);
-      return res.status(400).json({ error: "Failed to process audio file" });
-    }
-
-    try {
-      const { userId, speechQuizId, questionId } = req.body;
-      const audio = req.file;
-
-      console.log("Received submission:", { userId, speechQuizId, questionId, audio: !!audio });
-
-      if (!userId || !speechQuizId || !questionId || !audio) {
-        return res.status(400).json({ error: "Missing required fields: userId, speechQuizId, questionId, or audio" });
-      }
-
-      // Ensure the uploads directory exists
-      const uploadDir = join(process.cwd(), "public", "uploads");
-      await mkdir(uploadDir, { recursive: true }); // Creates directory if it doesn't exist
-
-      // Save audio file
-      const audioPath = join(uploadDir, `${Date.now()}.webm`);
-      await writeFile(audioPath, audio.buffer);
-      const audioUrl = `/uploads/${basename(audioPath)}`;
-
-      // Create database record
-      const userSpeechQuiz = await prisma.userSpeechQuiz.create({
-        data: {
-          userId,
-          speechQuizId,
-          questionId,
-          audioUrl,
-          attemptedAt: new Date(),
-        },
-        include: {
-          question: true,
-          speechQuiz: true,
-          user: { select: { name: true, email: true } },
-        },
-      });
-
-      res.status(201).json({ message: "Submission saved for review", userSpeechQuiz });
-    } catch (error) {
-      // Handle unique constraint violation (e.g., duplicate submission)
-      if (error.code === "P2002") {
-        return res.status(409).json({ error: "Submission already exists for this user, quiz, and question" });
-      }
-      console.error("Error saving speech quiz submission:", error);
-      res.status(500).json({ error: "Failed to save submission" });
-    }
+/** Wraps multer in a promise so we can await it. */
+function runMulter(req, res) {
+  return new Promise((resolve, reject) => {
+    upload.single("audio")(req, res, (err) => (err ? reject(err) : resolve()));
   });
 }
+
+export default apiHandler({ auth: true, methods: ["POST"] }, async (req, res, { session }) => {
+  try {
+    await runMulter(req, res);
+  } catch (err) {
+    return res.status(400).json({ error: err.message || "Failed to process audio file." });
+  }
+
+  const audio        = req.file;
+  const speechQuizId = mongoId.parse(req.body?.speechQuizId);
+  const questionId   = mongoId.parse(req.body?.questionId);
+
+  if (!audio) return res.status(400).json({ error: "Audio file is required." });
+
+  // Validate the speech quiz belongs to an enrolled course
+  const speechQuiz = await prisma.speechQuiz.findUnique({
+    where:   { id: speechQuizId },
+    select:  { id: true, sequence: { select: { courseId: true } } },
+  });
+  if (!speechQuiz) return res.status(404).json({ error: "Speech quiz not found." });
+
+  // Persist audio with a collision-safe name (userId + timestamp + random)
+  const uploadDir  = join(process.cwd(), "public", "uploads");
+  await mkdir(uploadDir, { recursive: true });
+  const filename   = `${session.user.id}-${Date.now()}-${Math.random().toString(36).slice(2)}.webm`;
+  const audioPath  = join(uploadDir, filename);
+  await writeFile(audioPath, audio.buffer);
+  const audioUrl   = `/uploads/${filename}`;
+
+  const record = await prisma.userSpeechQuiz.create({
+    data: { userId: session.user.id, speechQuizId, questionId, audioUrl },
+    include: { question: true, speechQuiz: { select: { title: true } } },
+  });
+
+  return res.status(201).json({ message: "Submission saved. Your instructor will review it shortly.", record });
+});

@@ -493,3 +493,4 @@ export default function Index() {
     </main>
   );
 }
+export { adminServerSideProps as getServerSideProps } from "@/lib/admin-auth";

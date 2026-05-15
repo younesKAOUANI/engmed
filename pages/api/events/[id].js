@@ -1,27 +1,14 @@
-import { PrismaClient } from "@prisma/client";
-import { ObjectId } from "mongodb";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { mongoId } from "@/lib/validations";
+import { z } from "zod";
 
-const prisma = new PrismaClient();
+export default apiHandler({ auth: true, role: ["ADMIN", "INSTRUCTOR"], methods: ["DELETE"] }, async (req, res) => {
+  const { id } = z.object({ id: mongoId }).parse(req.query);
 
-export default async function handler(req, res) {
-  const { id } = req.query;
+  const event = await prisma.speakingEvent.findUnique({ where: { id }, select: { id: true } });
+  if (!event) return res.status(404).json({ error: "Event not found." });
 
-  if (req.method === "DELETE") {
-    if (!id || !ObjectId.isValid(id)) {
-      return res.status(400).json({ error: "Valid id is required" });
-    }
-
-    try {
-      await prisma.speakingEvent.delete({
-        where: { id },
-      });
-      res.status(204).end();
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      res.status(500).json({ error: "Failed to delete event" });
-    }
-  } else {
-    res.setHeader("Allow", ["DELETE"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+  await prisma.speakingEvent.delete({ where: { id } });
+  return res.status(204).end();
+});

@@ -7,6 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  INSTRUCTOR
+  STUDENT
+}
+
+enum CefrLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+// Question type discriminator — replaces three nullable FK pattern with an
+// explicit field that makes queries self-documenting and prevents orphaned rows.
+enum QuestionType {
+  MCQ    // Multiple-choice (quiz or exam)
+  SPEECH // Speech prompt (no correct answer)
+}
+
+// ─── Auth (NextAuth adapter) ──────────────────────────────────────────────────
+
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   userId            String  @db.ObjectId
@@ -48,79 +74,299 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+// ─── Users ───────────────────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  email           String    @unique
+  name            String    @db.String
+  password        String
+  phoneNumber     String?   @db.String
+  profession      String?   @db.String
+  yearOfStudy     Int?      @db.Int
+  isVerified      Boolean   @default(false)
+  role            UserRole  @default(STUDENT)
+  balance         Float     @default(0)
+  specialty       String?   @db.String
+  profilePicture  String?
+  // Audit fields
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  enrollments         Enrollment[]
+  userQuizzes         UserQuiz[]
+  userSpeechQuizzes   UserSpeechQuiz[]
+  userCourses         UserCourse[]
+  notes               Note[]
+  userExams           UserExam[]
+  certificates        Certificate[]
+  glossary            Glossary[]
+  eventParticipations EventParticipation[]
+  createdEvents       SpeakingEvent[] @relation("EventCreator")
+
+  @@index([role])
+  @@index([createdAt])   // recent sign-ups query
+  @@index([isVerified])  // verified/unverified filter
+  @@map("users")
+}
+
+// ─── Courses ──────────────────────────────────────────────────────────────────
+
+model Course {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  title         String         @db.String
+  description   String         @db.String
+  price         Float
+  thumbnail     String?
+  published     Boolean        @default(false)
+  publishedAt   DateTime?      // set when published becomes true
+  level         CefrLevel?     // CEFR level of the course
+  language      String         @default("English") @db.String
+  rating        Float          @default(0)
+  totalStudents Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  sequences    CourseSequence[]
+  enrollments  Enrollment[]
+  userCourses  UserCourse[]
+  exam         Exam?
+  certificates Certificate[]
+
+  @@index([published])
+  @@index([publishedAt])
+  @@index([price])
+  @@index([rating])         // sort by rating
+  @@index([totalStudents])  // sort by popularity
+  @@index([level])          // filter by CEFR level
+  @@index([createdAt])      // recent courses
+  @@map("courses")
+}
+
+model CourseSequence {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String  @db.String
+  description String? @db.String  // optional per-lesson description
+  order       Int
+  courseId    String  @db.ObjectId
+  course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  quiz        Quiz?
+  speechQuiz  SpeechQuiz?
+  video       Video?
+  file        File?
+
+  @@unique([courseId, order])  // enforce ordering uniqueness per course
+  @@index([courseId])
+  @@map("course_sequences")
+}
+
+// ─── Content ──────────────────────────────────────────────────────────────────
+
+model Video {
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  title      String         @db.String
+  sequenceId String         @unique @db.ObjectId
+  duration   Int            // seconds
+  format     String         @db.String
+  link       String
+  thumbnail  String?
+  sequence   CourseSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@map("videos")
+}
+
+model File {
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  fileName   String         @db.String
+  sequenceId String         @unique @db.ObjectId
+  url        String
+  mimeType   String?        @db.String  // store actual MIME for validation
+  sizeBytes  Int?           // file size in bytes
+  sequence   CourseSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@map("files")
+}
+
+// ─── Quizzes & Questions ──────────────────────────────────────────────────────
+
+// Question is shared across Quiz, Exam, and SpeechQuiz.
+// The `type` discriminator makes the intent explicit instead of relying on
+// which nullable FK is set — the old pattern allowed invalid states where
+// a question had quizId AND examId set simultaneously.
+model Question {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  type          QuestionType @default(MCQ)
+  content       String       @db.String
+  answers       String[]     @default([])  // MCQ only; empty for SPEECH
+  correctAnswer String?                    // MCQ only; null for SPEECH
+  points        Int?                       // MCQ only; null for SPEECH
+  order         Int?                       // display order within its parent
+  quizId        String?      @db.ObjectId
+  examId        String?      @db.ObjectId
+  speechQuizId  String?      @db.ObjectId
+  quiz          Quiz?        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  exam          Exam?        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  speechQuiz    SpeechQuiz?  @relation(fields: [speechQuizId], references: [id], onDelete: Cascade)
+  userSpeechQuizzes UserSpeechQuiz[]
+
+  @@index([quizId])
+  @@index([examId])
+  @@index([speechQuizId])
+  @@index([type])
+  @@map("questions")
+}
+
+model Quiz {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  title       String         @db.String
+  sequenceId  String         @unique @db.ObjectId
+  duration    Int?           // seconds; null = untimed
+  attempts    Int            @default(1)
+  sequence    CourseSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  userQuizzes UserQuiz[]
+
+  @@map("quizzes")
+}
+
+model SpeechQuiz {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  title             String         @db.String
+  sequenceId        String         @unique @db.ObjectId
+  duration          Int?           // seconds; null = untimed
+  attempts          Int            @default(1)
+  sequence          CourseSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  questions         Question[]
+  userSpeechQuizzes UserSpeechQuiz[]
+
+  @@map("speech_quizzes")
+}
+
+model Exam {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  title        String     @db.String
+  courseId     String     @unique @db.ObjectId
+  duration     Int        // seconds
+  passingScore Int        @default(70)  // percentage (0–100)
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions    Question[]
+  userExams    UserExam[]
+
+  @@map("exams")
+}
+
+// ─── User Progress ────────────────────────────────────────────────────────────
+
 model Enrollment {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  courseId    String   @db.ObjectId
-  enrolledAt  DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  courseId   String   @db.ObjectId
+  enrolledAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@index([userId])
   @@index([courseId])
+  @@index([enrolledAt])  // recent enrollments query
   @@map("enrollments")
 }
 
-model UserQuiz {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  quizId     String   @db.ObjectId
-  score      Int      @default(0)
-  passed     Boolean  @default(false)
-  attemptedAt DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, quizId])
-  @@index([userId])
-  @@index([quizId])
-  @@map("user_quizzes")
-}
-
 model UserCourse {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  courseId  String   @db.ObjectId
-  progress  Float    @default(0)
-  startedAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  course    Course   @relation(fields: [courseId], references: [id])
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  courseId    String    @db.ObjectId
+  progress    Float     @default(0)   // 0.0–1.0 (percentage as decimal)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?               // set when progress reaches 1.0
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, courseId])
   @@index([userId])
   @@index([courseId])
   @@map("user_courses")
 }
 
-model UserExam {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  examId     String   @db.ObjectId
-  score      Int      @default(0)
-  passed     Boolean  @default(false)
+model UserQuiz {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  quizId      String   @db.ObjectId
+  score       Int      @default(0)
+  passed      Boolean  @default(false)
   attemptedAt DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  exam       Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, quizId])
+  @@index([userId])
+  @@index([quizId])
+  @@index([passed])       // stats: count passed
+  @@index([attemptedAt])  // recent activity
+  @@map("user_quizzes")
+}
+
+model UserExam {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  examId      String   @db.ObjectId
+  score       Int      @default(0)
+  passed      Boolean  @default(false)
+  attemptedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
 
   @@unique([userId, examId])
   @@index([userId])
   @@index([examId])
+  @@index([passed])  // stats
   @@map("user_exams")
 }
 
+model UserSpeechQuiz {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String    @db.ObjectId
+  speechQuizId String    @db.ObjectId
+  questionId   String    @db.ObjectId
+  audioUrl     String?
+  score        Int?      // null = pending review
+  notes        String?   // admin feedback
+  passed       Boolean?  // null = pending review
+  attemptedAt  DateTime  @default(now())
+  scoredAt     DateTime?
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  speechQuiz   SpeechQuiz @relation(fields: [speechQuizId], references: [id], onDelete: Cascade)
+  question     Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, speechQuizId, questionId])
+  @@index([userId])
+  @@index([speechQuizId])
+  @@index([questionId])
+  @@index([score])        // filter pending (score IS NULL)
+  @@index([attemptedAt])  // sort by submission date
+  @@map("user_speech_quizzes")
+}
+
 model Certificate {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  courseId  String   @db.ObjectId
-  issuedAt  DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String   @db.ObjectId
+  courseId String   @db.ObjectId
+  issuedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@index([userId])
   @@index([courseId])
+  @@index([issuedAt])  // sort certificates by date
   @@map("certificates")
 }
+
+// ─── Learning tools ───────────────────────────────────────────────────────────
 
 model Glossary {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -133,8 +379,25 @@ model Glossary {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([word])     // full-text search on word
   @@map("glossary")
 }
+
+model Note {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  content    String   @db.String
+  userId     String   @db.ObjectId
+  sequenceId String?  @db.ObjectId  // was quizId — renamed for accuracy
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sequenceId])
+  @@map("notes")
+}
+
+// ─── Community ───────────────────────────────────────────────────────────────
 
 model SpeakingEvent {
   id          String              @id @default(auto()) @map("_id") @db.ObjectId
@@ -148,211 +411,20 @@ model SpeakingEvent {
   participants EventParticipation[]
 
   @@index([createdBy])
+  @@index([date])     // upcoming events query
   @@map("speaking_events")
 }
 
 model EventParticipation {
-  id        String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String        @db.ObjectId
-  eventId   String        @db.ObjectId
-  joinedAt  DateTime      @default(now())
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event     SpeakingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id       String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String        @db.ObjectId
+  eventId  String        @db.ObjectId
+  joinedAt DateTime      @default(now())
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event    SpeakingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([userId, eventId])
   @@index([userId])
   @@index([eventId])
   @@map("event_participations")
-}
-
-model User {
-  id             String            @id @default(auto()) @map("_id") @db.ObjectId
-  email          String            @unique
-  name           String            @db.String
-  password       String
-  phoneNumber    String?           @db.String 
-  profession     String?           @db.String
-  yearOfStudy    Int?              @db.Int
-  isVerified     Boolean           @default(false)
-  role           UserRole          @default(STUDENT)
-  balance        Float             @default(0)
-  specialty      String?           @db.String
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  profilePicture String?
-  accounts       Account[]
-  sessions       Session[]
-  enrollments    Enrollment[]
-  userQuizzes    UserQuiz[]
-  userSpeechQuizzes UserSpeechQuiz[]
-  userCourses    UserCourse[]
-  notes          Note[]
-  userExams      UserExam[]
-  certificates   Certificate[]
-  glossary       Glossary[]
-  eventParticipations EventParticipation[]
-  createdEvents  SpeakingEvent[]   @relation("EventCreator")
-
-  @@index([role])
-  @@map("users")
-}
-
-model Course {
-  id            String           @id @default(auto()) @map("_id") @db.ObjectId
-  title         String           @db.String
-  description   String           @db.String
-  price         Float
-  thumbnail     String?
-  published     Boolean          @default(false)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  rating        Float            @default(0)
-  totalStudents Int              @default(0)
-  sequences     CourseSequence[]
-  enrollments   Enrollment[]
-  userCourses   UserCourse[]
-  exam          Exam?
-  certificates  Certificate[]
-
-  @@index([published])
-  @@index([price])
-  @@map("courses")
-}
-
-model Quiz {
-  id         String         @id @default(auto()) @map("_id") @db.ObjectId
-  title      String         @db.String
-  sequenceId String         @unique @db.ObjectId
-  duration   Int?
-  attempts   Int            @default(1)
-  sequence   CourseSequence @relation(fields: [sequenceId], references: [id])
-  questions  Question[]
-  userQuizzes UserQuiz[]
-
-  @@map("quizzes")
-}
-
-
-model Video {
-  id         String         @id @default(auto()) @map("_id") @db.ObjectId
-  title      String         @db.String
-  sequenceId String         @unique @db.ObjectId
-  duration   Int
-  format     String         @db.String
-  link       String
-  thumbnail  String?
-  sequence   CourseSequence @relation(fields: [sequenceId], references: [id])
-
-  @@map("videos")
-}
-
-model File {
-  id         String         @id @default(auto()) @map("_id") @db.ObjectId
-  fileName   String         @db.String
-  sequenceId String         @unique @db.ObjectId
-  url        String
-  sequence   CourseSequence @relation(fields: [sequenceId], references: [id])
-
-  @@map("files")
-}
-
-model Exam {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  title        String     @db.String
-  courseId     String     @unique @db.ObjectId
-  duration     Int
-  passingScore Int        @default(70)
-  course       Course     @relation(fields: [courseId], references: [id])
-  questions    Question[]
-  userExams    UserExam[]
-
-  @@map("exams")
-}
-
-model Note {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  content   String   @db.String
-  userId    String   @db.ObjectId
-  quizId    String?  @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([quizId])
-  @@map("notes")
-}
-
-enum UserRole {
-  ADMIN
-  INSTRUCTOR
-  STUDENT
-}
-
-
-model SpeechQuiz {
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
-  title        String         @db.String
-  sequenceId   String         @unique @db.ObjectId
-  duration     Int?
-  attempts     Int            @default(1)
-  sequence     CourseSequence @relation(fields: [sequenceId], references: [id])
-  questions    Question[]
-  userSpeechQuizzes UserSpeechQuiz[]
-  @@map("speech_quizzes")
-}
-
-model Question {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
-  content       String       @db.String
-  answers       String[]     @default([]) // Optional for quiz/exam, empty for speechQuiz
-  correctAnswer String?      // Optional for quiz/exam, null for speechQuiz
-  points        Int?         // Optional for quiz/exam, null for speechQuiz
-  quizId        String?      @db.ObjectId
-  examId        String?      @db.ObjectId
-  speechQuizId  String?      @db.ObjectId
-  quiz          Quiz?        @relation(fields: [quizId], references: [id])
-  exam          Exam?        @relation(fields: [examId], references: [id])
-  speechQuiz    SpeechQuiz?  @relation(fields: [speechQuizId], references: [id])
-  @@index([quizId])
-  @@index([examId])
-  @@index([speechQuizId])
-  @@map("questions")
-  UserSpeechQuiz UserSpeechQuiz[]
-}
-
-model UserSpeechQuiz {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String     @db.ObjectId
-  speechQuizId String     @db.ObjectId
-  questionId   String     @db.ObjectId // Track specific question
-  audioUrl     String?    // Store audio file URL
-  score        Int?       // Null until admin scores
-  notes        String?    // Admin feedback
-  passed       Boolean?   // Null until admin scores
-  attemptedAt  DateTime   @default(now())
-  scoredAt     DateTime?  // When admin scores
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  speechQuiz   SpeechQuiz @relation(fields: [speechQuizId], references: [id], onDelete: Cascade)
-  question     Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  @@unique([userId, speechQuizId, questionId])
-  @@index([userId])
-  @@index([speechQuizId])
-  @@index([questionId])
-  @@map("user_speech_quizzes")
-}
-
-model CourseSequence {
-  id         String       @id @default(auto()) @map("_id") @db.ObjectId
-  title      String       @db.String
-  order      Int
-  courseId   String       @db.ObjectId
-  course     Course       @relation(fields: [courseId], references: [id])
-  quiz       Quiz?
-  speechQuiz SpeechQuiz?
-  video      Video?
-  file       File?
-  @@index([courseId])
-  @@index([order])
-  @@map("course_sequences")
 }

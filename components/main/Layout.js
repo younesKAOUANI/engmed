@@ -3,6 +3,7 @@ import AdminSidebar from "./AdminSidebar";
 import StudentHeader from "./StudentHeader";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import Head from "next/head";
 import { ToastProvider } from "@/components/ui/Toast";
 
@@ -61,7 +62,9 @@ export default function Layout({ children }) {
             className={`flex-1 overflow-y-auto p-6 ${!isAdmin ? "pt-24" : "pt-6"}`}
           >
             <div className="max-w-content mx-auto w-full">
-              {children}
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
             </div>
           </main>
         </div>

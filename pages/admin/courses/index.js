@@ -114,3 +114,5 @@ export default function AdminCourses() {
     </>
   );
 }
+
+export { adminServerSideProps as getServerSideProps } from "@/lib/admin-auth";

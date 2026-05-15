@@ -1,24 +1,15 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { submitQuizSchema } from "@/lib/validations";
 
-const prisma = new PrismaClient();
+export default apiHandler({ auth: true, methods: ["POST"] }, async (req, res, { session }) => {
+  const { quizId, score, passed } = submitQuizSchema.parse(req.body);
 
-export default async function handler(req, res) {
-  if (req.method === "POST") {
-    const { userId, quizId, score, passed } = req.body;
+  const result = await prisma.userQuiz.upsert({
+    where:  { userId_quizId: { userId: session.user.id, quizId } },
+    update: { score, passed, attemptedAt: new Date() },
+    create: { userId: session.user.id, quizId, score, passed },
+  });
 
-    try {
-      const userQuiz = await prisma.userQuiz.upsert({
-        where: { userId_quizId: { userId, quizId } },
-        update: { score, passed, attemptedAt: new Date() },
-        create: { userId, quizId, score, passed },
-      });
-      res.status(200).json(userQuiz);
-    } catch (error) {
-        console.error("Failed to save quiz result:", error);
-      res.status(500).json({ error: "Failed to save quiz result" });
-    }
-  } else {
-    res.setHeader("Allow", ["POST"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+  return res.status(200).json(result);
+});

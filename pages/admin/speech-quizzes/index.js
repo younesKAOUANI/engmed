@@ -206,3 +206,5 @@ export default function SpeechQuizReview() {
     </>
   );
 }
+
+export { adminServerSideProps as getServerSideProps } from "@/lib/admin-auth";

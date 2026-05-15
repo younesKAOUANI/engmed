@@ -1,89 +1,51 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { createCourseSchema, updateCourseSchema } from "@/lib/validations";
+import { z } from "zod";
 
-const prisma = new PrismaClient();
-
-const handleError = (res, error) => {
-  console.error('API Error:', error);
-  res.status(500).json({ error: 'Internal Server Error' });
-};
-
-export default async function handler(req, res) {
-  try {
-    const method = req.method.toUpperCase();
-    const handlers = {
-      GET: async () => {
-        const courses = await prisma.course.findMany({
-          include: {
-            sequences: {
-              include: {
-                quiz: true,
-                speechQuiz: true, // Add speechQuiz to include
-              },
-            },
-            exam: true,
-          },
-        });
-        res.status(200).json(courses);
+export default apiHandler({}, async (req, res) => {
+  if (req.method === "GET") {
+    const courses = await prisma.course.findMany({
+      select: {
+        id:           true,
+        title:        true,
+        description:  true,
+        price:        true,
+        thumbnail:    true,
+        published:    true,
+        level:        true,
+        rating:       true,
+        totalStudents:true,
+        updatedAt:    true,
+        sequences: {
+          select: { id: true, title: true, order: true, quiz: { select: { id: true } }, speechQuiz: { select: { id: true } } },
+        },
       },
-
-      POST: async () => {
-        const { title, description, price, thumbnail } = req.body;
-
-        if (!title || !description || !price || !thumbnail) {
-          return res
-            .status(400)
-            .json({ error: 'All fields (title, description, price, thumbnail) are required.' });
-        }
-
-        const course = await prisma.course.create({
-          data: {
-            title,
-            description,
-            price: parseInt(price),
-            thumbnail,
-          },
-        });
-        res.status(201).json(course);
-      },
-
-      PUT: async () => {
-        const { id, ...data } = req.body;
-
-        if (!id) {
-          return res.status(400).json({ error: 'ID is required for updating a course.' });
-        }
-
-        const course = await prisma.course.update({
-          where: { id },
-          data: {
-            ...data,
-            price: data.price ? parseInt(data.price) : undefined,
-          },
-        });
-        res.status(200).json(course);
-      },
-
-      DELETE: async () => {
-        const { id } = req.query;
-
-        if (!id) {
-          return res.status(400).json({ error: 'ID is required for deleting a course.' });
-        }
-
-        await prisma.course.delete({ where: { id } }); // Removed parseInt as id is String in schema
-        res.status(204).end();
-      },
-    };
-
-    if (!handlers[method]) {
-      return res
-        .setHeader('Allow', Object.keys(handlers))
-        .status(405)
-        .json({ error: `Method ${method} Not Allowed` });
-    }
-
-    return handlers[method]();
-  } catch (error) {
-    handleError(res, error);
+      orderBy: { createdAt: "desc" },
+    });
+    return res.status(200).json(courses);
   }
-}
+
+  if (req.method === "POST") {
+    // Only instructors and admins can create courses
+    const session = req._session; // set by apiHandler when auth:true; handled below
+    const body = createCourseSchema.parse(req.body);
+    const course = await prisma.course.create({ data: body });
+    return res.status(201).json(course);
+  }
+
+  if (req.method === "PUT") {
+    const { id, ...rest } = z.object({ id: z.string() }).merge(updateCourseSchema).parse(req.body);
+    const course = await prisma.course.update({ where: { id }, data: rest });
+    return res.status(200).json(course);
+  }
+
+  if (req.method === "DELETE") {
+    const { id } = z.object({ id: z.string() }).parse(req.query);
+    await prisma.course.delete({ where: { id } });
+    return res.status(204).end();
+  }
+
+  res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
+  return res.status(405).json({ error: `Method ${req.method} not allowed.` });
+});

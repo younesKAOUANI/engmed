@@ -1,64 +1,30 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { mongoId } from "@/lib/validations";
+import { z } from "zod";
 
-const prisma = new PrismaClient();
-
-export default async function handler(req, res) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session || !session.user?.id) {
-    return res.status(401).json({ error: "Unauthorized" });
+export default apiHandler({ auth: true }, async (req, res, { session }) => {
+  if (req.method === "GET") {
+    const enrollments = await prisma.enrollment.findMany({
+      where:   { userId: session.user.id },
+      include: { course: { select: { id: true, title: true, thumbnail: true, level: true, totalStudents: true } } },
+      orderBy: { enrolledAt: "desc" },
+    });
+    return res.status(200).json({ success: true, enrollments });
   }
 
   if (req.method === "POST") {
-    try {
-      const { courseId } = req.body;
+    const { courseId } = z.object({ courseId: mongoId }).parse(req.body);
 
-      if (!courseId) {
-        return res.status(400).json({ error: "courseId is required" });
-      }
+    const course = await prisma.course.findUnique({ where: { id: courseId }, select: { id: true } });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
-      const existingEnrollment = await prisma.enrollment.findUnique({
-        where: {
-          userId_courseId: {
-            userId: session.user.id,
-            courseId,
-          },
-        },
-      });
-
-      if (existingEnrollment) {
-        return res.status(400).json({ error: "User is already enrolled in this course" });
-      }
-
-      const enrollment = await prisma.enrollment.create({
-        data: {
-          userId: session.user.id,
-          courseId,
-        },
-      });
-
-      return res.status(201).json({ success: true, enrollment });
-    } catch (error) {
-      console.error("Enrollment creation failed:", error);
-      return res.status(500).json({ error: "Failed to create enrollment" });
-    }
+    const enrollment = await prisma.enrollment.create({
+      data: { userId: session.user.id, courseId },
+    });
+    return res.status(201).json({ success: true, enrollment });
   }
 
-  if (req.method === "GET") {
-    try {
-      const enrollments = await prisma.enrollment.findMany({
-        where: { userId: session.user.id },
-        include: { course: true },
-      });
-
-      return res.status(200).json({ success: true, enrollments });
-    } catch (error) {
-      console.error("Failed to fetch enrollments:", error);
-      return res.status(500).json({ error: "Failed to fetch enrollments" });
-    }
-  }
-
-  return res.status(405).json({ error: "Method Not Allowed" });
-}
+  res.setHeader("Allow", ["GET", "POST"]);
+  return res.status(405).json({ error: `Method ${req.method} not allowed.` });
+});

@@ -1,48 +1,33 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth"; // Corrected import path
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { mongoId } from "@/lib/validations";
+import { z } from "zod";
 
-const prisma = new PrismaClient();
-
-export default async function handler(req, res) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session || !session.user?.id) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  const { id } = req.query;
+export default apiHandler({ auth: true }, async (req, res, { session }) => {
+  const { id } = z.object({ id: mongoId }).parse(req.query);
 
   if (req.method === "GET") {
-    try {
-      const enrollment = await prisma.enrollment.findUnique({
-        where: { id },
-        include: { course: true, user: true }, // Include course and user details if needed
-      });
-
-      if (!enrollment) {
-        return res.status(404).json({ error: "Enrollment not found" });
-      }
-
-      return res.status(200).json({ success: true, enrollment });
-    } catch (error) {
-      console.error("Failed to fetch enrollment:", error);
-      return res.status(500).json({ error: "Failed to fetch enrollment" });
+    const enrollment = await prisma.enrollment.findUnique({
+      where:   { id },
+      include: { course: true },
+    });
+    if (!enrollment) return res.status(404).json({ error: "Enrollment not found." });
+    if (enrollment.userId !== session.user.id && session.user.role !== "ADMIN") {
+      return res.status(403).json({ error: "You do not own this enrollment." });
     }
+    return res.status(200).json({ success: true, enrollment });
   }
 
   if (req.method === "DELETE") {
-    try {
-      await prisma.enrollment.delete({
-        where: { id },
-      });
-
-      return res.status(200).json({ success: true, message: "Enrollment deleted" });
-    } catch (error) {
-      console.error("Failed to delete enrollment:", error);
-      return res.status(500).json({ error: "Failed to delete enrollment" });
+    const enrollment = await prisma.enrollment.findUnique({ where: { id }, select: { userId: true } });
+    if (!enrollment) return res.status(404).json({ error: "Enrollment not found." });
+    if (enrollment.userId !== session.user.id && session.user.role !== "ADMIN") {
+      return res.status(403).json({ error: "You do not own this enrollment." });
     }
+    await prisma.enrollment.delete({ where: { id } });
+    return res.status(204).end();
   }
 
-  return res.status(405).json({ error: "Method Not Allowed" });
-}
+  res.setHeader("Allow", ["GET", "DELETE"]);
+  return res.status(405).json({ error: `Method ${req.method} not allowed.` });
+});

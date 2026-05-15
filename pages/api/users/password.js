@@ -1,53 +1,24 @@
-import { PrismaClient } from "@prisma/client";
-import { ObjectId } from "mongodb";
-import bcrypt from "bcrypt"; // For password hashing
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { updatePasswordSchema } from "@/lib/validations";
 
-const prisma = new PrismaClient();
+// Changes the authenticated user's own password.
+// session.user.id is the source of truth — req.body.userId is ignored.
+export default apiHandler({ auth: true, methods: ["PUT"] }, async (req, res, { session }) => {
+  const { currentPassword, newPassword } = updatePasswordSchema.parse(req.body);
 
-export default async function handler(req, res) {
-  if (req.method === "PUT") {
-    const { userId, currentPassword, newPassword } = req.body;
+  const user = await prisma.user.findUnique({
+    where:  { id: session.user.id },
+    select: { password: true },
+  });
+  if (!user) return res.status(404).json({ error: "User not found." });
 
-    if (!userId || !currentPassword || !newPassword) {
-      return res.status(400).json({ error: "userId, currentPassword, and newPassword are required" });
-    }
+  const match = await bcrypt.compare(currentPassword, user.password);
+  if (!match) return res.status(401).json({ error: "Current password is incorrect." });
 
-    if (!ObjectId.isValid(userId)) {
-      return res.status(400).json({ error: "Invalid userId format" });
-    }
+  const hashed = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({ where: { id: session.user.id }, data: { password: hashed } });
 
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { password: true },
-      });
-
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      // Verify current password
-      const passwordMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!passwordMatch) {
-        return res.status(401).json({ error: "Current password is incorrect" });
-      }
-
-      // Hash new password
-      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
-      // Update password
-      await prisma.user.update({
-        where: { id: userId },
-        data: { password: hashedNewPassword },
-      });
-
-      res.status(200).json({ message: "Password updated successfully" });
-    } catch (error) {
-      console.error("Error updating password:", error);
-      res.status(500).json({ error: "Failed to update password" });
-    }
-  } else {
-    res.setHeader("Allow", ["PUT"]);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+  return res.status(200).json({ message: "Password updated successfully." });
+});

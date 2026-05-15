@@ -212,3 +212,5 @@ export default function AdminDashboard() {
     </>
   );
 }
+
+export { adminServerSideProps as getServerSideProps } from "@/lib/admin-auth";

@@ -1,48 +1,35 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+import { apiHandler } from "@/lib/api-handler";
+import { signupSchema } from "@/lib/validations";
+import { authLimiter } from "@/lib/rate-limit";
 
-const prisma = new PrismaClient();
+export default apiHandler({ methods: ["POST"] }, async (req, res) => {
+  const rl = authLimiter.check(req);
+  if (!rl.success) return res.status(429).json({ error: rl.message });
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+  const body = signupSchema.parse(req.body);
+
+  const existing = await prisma.user.findUnique({ where: { email: body.email } });
+  if (existing) {
+    return res.status(409).json({ error: "An account with this email already exists." });
   }
 
-  const { name, email, password, phoneNumber, profession, yearOfStudy, specialty, profilePicture } = req.body;
+  const hashedPassword = await bcrypt.hash(body.password, 12);
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: "Name, email, and password are required" });
-  }
+  await prisma.user.create({
+    data: {
+      name:        body.name,
+      email:       body.email,
+      password:    hashedPassword,
+      phoneNumber: body.phoneNumber,
+      profession:  body.profession,
+      yearOfStudy: body.yearOfStudy,
+      specialty:   body.specialty,
+      role:        "STUDENT",
+      balance:     0,
+    },
+  });
 
-  try {
-    // Check if email already exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ error: "Email already in use" });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        phoneNumber,
-        profession,
-        yearOfStudy,
-        specialty,
-        profilePicture,
-        role: "STUDENT", // Default role
-        balance: 0, // Default balance
-      },
-    });
-
-    return res.status(201).json({ message: "User created successfully" });
-  } catch (error) {
-    console.error("Signup error:", error);
-    return res.status(500).json({ error: "Failed to create user" });
-  }
-}
+  return res.status(201).json({ message: "Account created successfully." });
+});

@@ -31,19 +31,18 @@ export default function CourseViewer() {
         const data = response.data;
         const enrichedSequences = data.sequences.map((sequence) => ({
           ...sequence,
+          // Use ?? (nullish coalescing) so a falsy but defined value doesn't
+          // short-circuit to the speech quiz check the way || does.
           completed:
-            sequence.quiz?.userQuizzes?.[0]?.passed ||
-            false ||
-            sequence.speechQuiz?.userSpeechQuizzes?.[0]?.passed ||
-            false,
+            (sequence.quiz?.userQuizzes?.[0]?.passed ?? false) ||
+            (sequence.speechQuiz?.userSpeechQuizzes?.[0]?.passed ?? false),
         }));
         setCourseData({ ...data, sequences: enrichedSequences });
         setActiveSequence(enrichedSequences[0] || null);
 
-        // Check if exam is already passed
+        // Check if exam is already passed (session userId used server-side)
         if (data.exam) {
           const examResponse = await axios.post("/api/user-exams/check", {
-            userId,
             examId: data.exam.id,
           });
           if (examResponse.data.passed) {
@@ -71,11 +70,7 @@ export default function CourseViewer() {
     if (passed && !certificateEarned) {
       setCertificateEarned(true);
       try {
-        await axios.post("/api/certificates", {
-          userId,
-          courseId: id,
-          issuedAt: new Date().toISOString(),
-        });
+        await axios.post("/api/certificates", { courseId: id });
       } catch (err) {
         console.error("Failed to save certificate:", err);
       }

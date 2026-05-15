@@ -168,3 +168,5 @@ export default function AdminUsers() {
     </>
   );
 }
+
+export { adminServerSideProps as getServerSideProps } from "@/lib/admin-auth";
